@@ -1,0 +1,21 @@
+import { describe, expect, it } from "vitest";
+import { parseIsoDate, toIsoDate } from "./dates";
+
+describe("parseIsoDate", () => {
+  it("accepts a real calendar date", () => {
+    expect(parseIsoDate("2024-02-29")).toEqual({ year: 2024, month: 2, day: 29 });
+  });
+
+  it("rejects impossible dates", () => {
+    expect(parseIsoDate("2015-02-29")).toBeNull();
+    expect(parseIsoDate("2020-13-01")).toBeNull();
+    expect(parseIsoDate("2020-00-10")).toBeNull();
+    expect(parseIsoDate("03/14/2001")).toBeNull();
+  });
+});
+
+describe("toIsoDate", () => {
+  it("formats the local calendar day", () => {
+    expect(toIsoDate(new Date(2026, 8, 21))).toBe("2026-09-21");
+  });
+});

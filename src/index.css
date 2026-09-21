@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Source Sans 3", "Segoe UI", sans-serif;
+  --font-serif: "Fraunces", "Iowan Old Style", Palatino, serif;
+  --color-paper: #f3eee4;
+  --color-paper-2: #fffaf3;
+  --color-ink: #221c16;
+  --color-ink-soft: #5e5348;
+  --color-line: #e4d9c8;
+  --color-clay: #b5522a;
+  --color-clay-deep: #8c3e1d;
+  --color-sage: #2f6a4a;
+  --color-sage-soft: #e4f0e6;
+  --color-gold: #8a6230;
+  --color-gold-soft: #f6ead4;
+}
+
+html {
+  background: var(--color-paper);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  background:
+    radial-gradient(900px 420px at 0% -10%, #f6e4d0 0%, transparent 60%),
+    var(--color-paper);
+}
+
+button {
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-clay);
+  outline-offset: 3px;
+}
