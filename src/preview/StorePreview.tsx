@@ -2,7 +2,7 @@ import { Cake, Mail, MapPin, Phone, Plus, RotateCcw, Users } from "lucide-react"
 import type { ReactNode } from "react";
 import { formatMailingLabel, missingAddressParts } from "../lib/address";
 import { nextBirthday, upcomingBirthdays } from "../lib/birthdays";
-import { addDays, formatLongDate, formatToday, toIsoDate } from "../lib/dates";
+import { addDays, formatLongDate, formatToday } from "../lib/dates";
 import { useFamily } from "../store/FamilyProvider";
 import type { Address, FamilyUser, Member } from "../types";
 
@@ -14,11 +14,14 @@ export function StorePreview() {
 
   function addSample() {
     const count = members.filter((member) => member.firstName === "Sample").length + 1;
+    const upcoming = addDays(today, 3);
+    const month = String(upcoming.getMonth() + 1).padStart(2, "0");
+    const day = String(upcoming.getDate()).padStart(2, "0");
     addMember({
       firstName: "Sample",
       lastName: `Relative ${count}`,
       relationship: "Friend",
-      dateOfBirth: toIsoDate(addDays(today, 3)),
+      dateOfBirth: `1990-${month}-${day}`,
       phone: "(503) 555-0199",
       email: "sample.relative@example.com",
       address: null,
