@@ -134,7 +134,7 @@ export function ImportPage() {
 
         {table ? (
           <>
-            <section>
+            <section className="min-w-0">
               <h2 className="font-display text-2xl font-bold tracking-tight">Columns</h2>
               <p className="mt-2 text-sm text-stone-500">Kinfolk guesses from the header. Change any column that landed in the wrong place.</p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -160,12 +160,12 @@ export function ImportPage() {
               </div>
             </section>
 
-            <section>
+            <section className="min-w-0">
               <h2 className="font-display text-2xl font-bold tracking-tight">Review</h2>
               <p className="mt-2 text-sm text-stone-500" aria-live="polite">
                 {plans.length === 0 ? "No people were found under those headers." : `${ready} of ${plans.length} rows ready to add.`}
               </p>
-              <div className={`${surfaceClass} mt-4 overflow-x-auto`}>
+              <div className={`${surfaceClass} mt-4 min-w-0 overflow-x-auto`}>
                 <table className="w-full min-w-[720px] border-collapse text-left text-sm">
                   <caption className="sr-only">Rows to import</caption>
                   <thead className="border-b border-stone-200/60 text-xs uppercase tracking-[0.14em] text-stone-500">

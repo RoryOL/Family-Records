@@ -13,7 +13,7 @@ export interface SpreadsheetTable {
 }
 
 export function readSpreadsheet(data: ArrayBuffer, filename: string): SpreadsheetTable {
-  const workbook = XLSX.read(data, { type: "array", cellDates: true, dense: false });
+  const workbook = XLSX.read(data, { type: "array", cellDates: true, raw: true });
   const sheetName = workbook.SheetNames[0];
   if (!sheetName) {
     throw new Error("This workbook has no sheets.");

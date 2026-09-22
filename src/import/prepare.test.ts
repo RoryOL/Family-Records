@@ -102,9 +102,19 @@ describe("readSpreadsheet", () => {
     ]);
   });
 
-  it("reads a csv file", () => {
-    const bytes = new TextEncoder().encode("First Name,Town\nAoife,Malahide\n");
+  it("reads a csv file and leaves day-first dates as text", () => {
+    const bytes = new TextEncoder().encode("First Name,DOB\nAoife,05/06/2020\n");
     const table = readSpreadsheet(toArrayBuffer(bytes), "family.csv");
-    expect(table.rows[0]?.cells).toEqual(["Aoife", "Malahide"]);
+    expect(table.rows[0]?.cells).toEqual(["Aoife", "05/06/2020"]);
+    const [plan] = previewImport(table.headers, table.rows, suggestMappings(table.headers), [], new Date(2026, 8, 22));
+    expect(plan?.draft?.dateOfBirth).toBe("2020-06-05");
+  });
+
+  it("reads an Excel date cell as that calendar day", () => {
+    const sheet = XLSX.utils.aoa_to_sheet([["First Name", "DOB"], ["Niamh", new Date(Date.UTC(2020, 5, 5))]]);
+    const book = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(book, sheet, "Family");
+    const table = readSpreadsheet(toArrayBuffer(XLSX.write(book, { type: "array", bookType: "xlsx" })), "family.xlsx");
+    expect(table.rows[0]?.cells).toEqual(["Niamh", "2020-06-05"]);
   });
 });
