@@ -12,7 +12,7 @@ export function DirectoryPage() {
   const { group, currentUser, members, reset } = useFamily();
   const [searchParams, setSearchParams] = useSearchParams();
   const [armReset, setArmReset] = useState(false);
-  const query = searchParams.get("q") ?? "";
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   const relationship = searchParams.get("relationship") ?? "";
   const view = parseDirectoryView(searchParams.get("view"));
   const results = filterMembers(members, query, relationship);
@@ -34,6 +34,7 @@ export function DirectoryPage() {
   }
 
   function clearFilters() {
+    setQuery("");
     const next = new URLSearchParams(searchParams);
     next.delete("q");
     next.delete("relationship");
@@ -72,7 +73,10 @@ export function DirectoryPage() {
             className={inputClass}
             placeholder="Name or relationship"
             value={query}
-            onChange={(event) => assignParam("q", event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setArmReset(false);
+            }}
           />
         </div>
         <div className="lg:w-56">
