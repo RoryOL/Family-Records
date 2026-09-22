@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createInitialState } from "../data/mockFamily";
 import type { Member } from "../types";
-import { nextBirthday, upcomingBirthdays } from "./birthdays";
+import { birthdayTiming, nextBirthday, parseBirthdayWindow, upcomingBirthdays } from "./birthdays";
 
 const september21 = new Date(2026, 8, 21);
 
@@ -78,5 +78,20 @@ describe("nextBirthday", () => {
 
   it("returns null for an invalid date", () => {
     expect(nextBirthday("2020-02-31")).toBeNull();
+  });
+});
+
+describe("birthday windows", () => {
+  it("describes how soon a birthday is", () => {
+    expect(birthdayTiming(0)).toBe("today");
+    expect(birthdayTiming(1)).toBe("tomorrow");
+    expect(birthdayTiming(4)).toBe("in 4 days");
+  });
+
+  it("accepts only the 7, 30, and 90 day windows", () => {
+    expect(parseBirthdayWindow("7")).toBe(7);
+    expect(parseBirthdayWindow("90")).toBe(90);
+    expect(parseBirthdayWindow("14")).toBe(30);
+    expect(parseBirthdayWindow(null)).toBe(30);
   });
 });

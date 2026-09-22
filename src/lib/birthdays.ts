@@ -1,5 +1,16 @@
 import { parseIsoDate, toIsoDate } from "./dates";
-import type { Member, UpcomingBirthday } from "../types";
+import type { BirthdayWindow, Member, UpcomingBirthday } from "../types";
+
+export function parseBirthdayWindow(value: string | null): BirthdayWindow {
+  if (value === "7" || value === "30" || value === "90") return Number(value) as BirthdayWindow;
+  return 30;
+}
+
+export function birthdayTiming(daysUntil: number): string {
+  if (daysUntil === 0) return "today";
+  if (daysUntil === 1) return "tomorrow";
+  return `in ${daysUntil} days`;
+}
 
 export interface NextBirthday {
   nextOccurrence: string;
