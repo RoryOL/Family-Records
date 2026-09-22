@@ -4,6 +4,7 @@ import type { FamilyState, Member, MemberPatch } from "../types";
 
 export type FamilyAction =
   | { type: "add"; member: Member }
+  | { type: "import"; members: Member[] }
   | { type: "update"; id: string; patch: MemberPatch; updatedAt: string }
   | { type: "remove"; id: string }
   | { type: "reset" };
@@ -12,6 +13,9 @@ export function familyReducer(state: FamilyState, action: FamilyAction): FamilyS
   switch (action.type) {
     case "add":
       return { ...state, members: [...state.members, action.member] };
+    case "import":
+      if (action.members.length === 0) return state;
+      return { ...state, members: [...state.members, ...action.members] };
     case "update": {
       let changed = false;
       const members = state.members.map((member) => {

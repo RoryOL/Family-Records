@@ -11,6 +11,7 @@ export interface FamilyContextValue {
   members: Member[];
   getMember: (id: string) => Member | undefined;
   addMember: (draft: MemberDraft) => Member;
+  importMembers: (drafts: readonly MemberDraft[]) => Member[];
   updateMember: (id: string, patch: MemberPatch) => void;
   removeMember: (id: string) => void;
   reset: () => void;
@@ -39,6 +40,11 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
         const member = createMember(state.group.id, draft);
         dispatch({ type: "add", member });
         return member;
+      },
+      importMembers(drafts) {
+        const members = drafts.map((draft) => createMember(state.group.id, draft));
+        dispatch({ type: "import", members });
+        return members;
       },
       updateMember(id, patch) {
         dispatch({ type: "update", id, patch, updatedAt: new Date().toISOString() });

@@ -112,11 +112,18 @@ export type ImportTargetField =
   | "firstName"
   | "lastName"
   | "dateOfBirth"
-  | "address"
+  | "relationship"
   | "phone"
   | "email"
-  | "relationship"
-  | "notes";
+  | "notes"
+  | "address"
+  | "addressLine1"
+  | "addressLine2"
+  | "addressLine3"
+  | "city"
+  | "region"
+  | "postalCode"
+  | "country";
 
 export interface ColumnMapping {
   sourceHeader: string;

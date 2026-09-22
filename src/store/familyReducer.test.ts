@@ -35,7 +35,21 @@ describe("familyReducer", () => {
     const missing = familyReducer(removed, { type: "remove", id: "mem_missing" });
     expect(missing).toBe(removed);
 
-    const reset = familyReducer(removed, { type: "reset" });
+    const imported = createMember(initial.group.id, {
+      firstName: "Aoife",
+      lastName: "Murphy",
+      relationship: "Cousin",
+      dateOfBirth: "1990-03-15",
+      phone: null,
+      email: "aoife@example.com",
+      address: null,
+      notes: "",
+    });
+    const withImport = familyReducer(removed, { type: "import", members: [imported] });
+    expect(withImport.members.at(-1)?.fullName).toBe("Aoife Murphy");
+    expect(familyReducer(withImport, { type: "import", members: [] })).toBe(withImport);
+
+    const reset = familyReducer(withImport, { type: "reset" });
     expect(reset.members.map((member) => member.id)).toEqual(createInitialState().members.map((member) => member.id));
     expect(reset).not.toBe(initial);
   });

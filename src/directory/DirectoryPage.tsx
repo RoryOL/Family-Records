@@ -1,11 +1,11 @@
-import { LayoutGrid, Plus, Table } from "lucide-react";
+import { FileSpreadsheet, LayoutGrid, Plus, Table } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, Outlet, useSearchParams } from "react-router";
 import { filterMembers, listRelationships, parseDirectoryView } from "./filters";
 import { MemberCard } from "./MemberCard";
 import { MemberTable } from "./MemberTable";
 import { withSearch, withoutEdit } from "./paths";
-import { inputClass, labelClass, pageClass, primaryButtonClass, surfaceClass } from "./styles";
+import { inputClass, labelClass, pageClass, primaryButtonClass, secondaryButtonClass, surfaceClass } from "./styles";
 import { useFamily } from "../store/FamilyProvider";
 
 export function DirectoryPage() {
@@ -56,10 +56,16 @@ export function DirectoryPage() {
             <code className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">{group.inviteCode}</code>
           </p>
         </div>
-        <Link to={withSearch("/members/new", listSearch)} className={primaryButtonClass}>
-          <Plus size={16} aria-hidden />
-          Add member
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/import" className={secondaryButtonClass}>
+            <FileSpreadsheet size={16} aria-hidden />
+            Import
+          </Link>
+          <Link to={withSearch("/members/new", listSearch)} className={primaryButtonClass}>
+            <Plus size={16} aria-hidden />
+            Add member
+          </Link>
+        </div>
       </header>
 
       <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-end">

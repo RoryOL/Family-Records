@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 import { BirthdaysPage } from "./birthdays/BirthdaysPage";
+import { ImportPage } from "./import/ImportPage";
 import { CardsPage } from "./cards/CardsPage";
 import { DirectoryPage } from "./directory/DirectoryPage";
 import { MemberDrawer } from "./directory/MemberDrawer";
@@ -19,6 +20,7 @@ export default function App() {
             </Route>
             <Route path="/birthdays" element={<BirthdaysPage />} />
             <Route path="/cards" element={<CardsPage />} />
+            <Route path="/import" element={<ImportPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

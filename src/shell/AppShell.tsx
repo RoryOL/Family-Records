@@ -24,6 +24,9 @@ export function AppShell() {
             <ShellLink href="/cards" current={pathname.startsWith("/cards")}>
               Mailing
             </ShellLink>
+            <ShellLink href="/import" current={pathname.startsWith("/import")}>
+              Import
+            </ShellLink>
           </nav>
         </div>
       </header>
