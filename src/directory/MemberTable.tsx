@@ -43,7 +43,7 @@ export function MemberTable({ members, hrefFor }: { members: readonly Member[]; 
                 className="cursor-pointer border-b border-line last:border-b-0 hover:bg-paper"
                 onClick={() => navigate(href)}
               >
-                <th scope="row" className="px-4 py-3 font-serif text-base font-medium">
+                <th scope="row" className="px-4 py-3 font-display text-base font-bold">
                   <Link to={href} className="underline-offset-2 hover:underline" onClick={(event) => event.stopPropagation()}>
                     {member.fullName}
                   </Link>

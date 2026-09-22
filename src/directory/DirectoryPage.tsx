@@ -48,8 +48,8 @@ export function DirectoryPage() {
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <header className="flex flex-col gap-6 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-clay">Kinfolk</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight sm:text-5xl">{group.name}</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue">Kinfolk</p>
+          <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">{group.name}</h1>
           <p className="mt-2 max-w-xl text-ink-soft">{group.description}</p>
           <p className="mt-2 text-sm text-ink-soft">
             {currentUser.displayName} · {currentUser.role === "owner" ? "Owner" : "Editor"} · Invite{" "}
@@ -115,7 +115,7 @@ export function DirectoryPage() {
 
       {results.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-dashed border-line bg-paper-2 px-5 py-12 text-center">
-          <p className="font-serif text-2xl">
+          <p className="font-display text-2xl font-bold">
             {members.length === 0 ? "No one is in this household yet." : emptyFilterMessage(query, relationship)}
           </p>
           {members.length > 0 ? (
@@ -174,7 +174,7 @@ function ViewButton({ pressed, onClick, children }: { pressed: boolean; onClick:
       aria-pressed={pressed}
       onClick={onClick}
       className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold ${
-        pressed ? "bg-ink text-paper-2" : "text-ink-soft hover:text-ink"
+        pressed ? "bg-blue text-white" : "text-ink-soft hover:text-ink"
       }`}
     >
       {children}

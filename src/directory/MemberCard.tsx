@@ -10,21 +10,21 @@ export function MemberCard({ member, to }: { member: Member; to: string }) {
 
   return (
     <article
-      className={`relative flex h-full flex-col rounded-2xl border border-line bg-paper-2 p-5 hover:border-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-clay ${
-        soon ? "shadow-[inset_3px_0_0_var(--color-clay)]" : ""
+      className={`relative flex h-full flex-col rounded-2xl border border-line bg-paper-2 p-5 hover:border-blue has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue ${
+        soon ? "shadow-[inset_3px_0_0_var(--color-blue)]" : ""
       }`}
     >
       <div className="flex items-start justify-between gap-3">
-        <h2 className="font-serif text-2xl font-medium leading-tight">
+        <h2 className="font-display text-2xl font-bold leading-tight">
           <Link to={to} className="after:absolute after:inset-0 focus-visible:outline-none">
             {member.fullName}
           </Link>
         </h2>
-        {soon ? <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-clay">This week</span> : null}
+        {soon ? <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-blue">This week</span> : null}
       </div>
       <p className="mt-1 text-sm text-ink-soft">{member.relationship || "No relationship"}</p>
       <p className="mt-4 text-sm">{member.dateOfBirth ? formatLongDate(member.dateOfBirth) : "No birthday on file"}</p>
-      {next ? <p className={`text-sm ${soon ? "text-clay" : "text-ink-soft"}`}>{next}</p> : null}
+      {next ? <p className={`text-sm ${soon ? "text-blue" : "text-ink-soft"}`}>{next}</p> : null}
       <p className="mt-4 text-sm">{member.phone ?? "No phone"}</p>
       <p className="break-words text-sm">{member.email ?? "No email"}</p>
       <p className="mt-4 flex flex-wrap items-center gap-2">

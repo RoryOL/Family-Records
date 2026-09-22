@@ -101,7 +101,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
       <div className="flex h-full w-full flex-col bg-paper-2 sm:w-[32rem] sm:border-l sm:border-line">
         <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
           <div>
-            <h2 id="member-drawer-title" ref={titleRef} tabIndex={-1} className="font-serif text-3xl font-medium outline-none">
+            <h2 id="member-drawer-title" ref={titleRef} tabIndex={-1} className="font-display text-3xl font-bold outline-none">
               {title}
             </h2>
             {intent === "create" ? <p className="mt-1 text-sm text-ink-soft">Saved in this browser tab.</p> : null}
@@ -152,7 +152,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
                 Cancel
               </button>
               {member ? (
-                <button type="button" className="px-3 py-2 text-sm font-semibold text-clay" onClick={() => setPending("delete")}>
+                <button type="button" className="px-3 py-2 text-sm font-semibold text-blue" onClick={() => setPending("delete")}>
                   Remove
                 </button>
               ) : null}
@@ -168,7 +168,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
                 {member ? "Close" : "Back to directory"}
               </button>
               {member ? (
-                <button type="button" className="px-3 py-2 text-sm font-semibold text-clay" onClick={() => setPending("delete")}>
+                <button type="button" className="px-3 py-2 text-sm font-semibold text-blue" onClick={() => setPending("delete")}>
                   Remove
                 </button>
               ) : null}

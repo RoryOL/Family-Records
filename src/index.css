@@ -1,19 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Source Sans 3", "Segoe UI", sans-serif;
-  --font-serif: "Fraunces", "Iowan Old Style", Palatino, serif;
-  --color-paper: #f3eee4;
-  --color-paper-2: #fffaf3;
-  --color-ink: #221c16;
-  --color-ink-soft: #5e5348;
-  --color-line: #e4d9c8;
-  --color-clay: #b5522a;
-  --color-clay-deep: #8c3e1d;
-  --color-sage: #2f6a4a;
-  --color-sage-soft: #e4f0e6;
-  --color-gold: #8a6230;
-  --color-gold-soft: #f6ead4;
+  --font-sans: "Nunito", "Segoe UI", sans-serif;
+  --font-display: "Quicksand", "Nunito", sans-serif;
+  --color-paper: #f4f8fc;
+  --color-paper-2: #ffffff;
+  --color-ink: #16324f;
+  --color-ink-soft: #5b728a;
+  --color-line: #d5e3f2;
+  --color-blue: #1b6fe8;
+  --color-blue-deep: #1457b8;
+  --color-blue-soft: #e7f1fc;
 }
 
 html {
@@ -25,8 +22,9 @@ body {
   min-height: 100vh;
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-weight: 400;
   background:
-    radial-gradient(900px 420px at 0% -10%, #f6e4d0 0%, transparent 60%),
+    radial-gradient(900px 420px at 0% -10%, #d7e8fb 0%, transparent 60%),
     var(--color-paper);
 }
 
@@ -39,7 +37,7 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--color-clay);
+  outline: 2px solid var(--color-blue);
   outline-offset: 3px;
 }
 
@@ -68,5 +66,5 @@ dialog.kinfolk-drawer[open] {
 }
 
 dialog.kinfolk-drawer::backdrop {
-  background: rgb(34 28 22 / 0.45);
+  background: rgb(20 40 68 / 0.45);
 }

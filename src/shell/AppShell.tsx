@@ -8,10 +8,10 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen">
-      <div className="h-1.5 bg-clay" />
+      <div className="h-1.5 bg-blue" />
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <Link to="/" className="font-serif text-2xl font-medium text-ink no-underline">
+          <Link to="/" className="font-display text-2xl font-bold text-ink no-underline">
             Kinfolk
           </Link>
           <nav aria-label="Primary" className="flex flex-wrap gap-2">
@@ -39,7 +39,7 @@ function ShellLink({ href, current, children }: { href: string; current: boolean
       to={href}
       aria-current={current ? "page" : undefined}
       className={`rounded-full px-3 py-1.5 text-sm font-semibold no-underline ${
-        current ? "bg-ink text-paper-2" : "text-ink-soft hover:text-ink"
+        current ? "bg-blue text-white" : "text-ink-soft hover:text-ink"
       }`}
     >
       {children}

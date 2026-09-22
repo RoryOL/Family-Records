@@ -104,7 +104,7 @@ export function MemberForm({
           inputRef={dateRef}
           onChange={(value) => update("dateOfBirth", value)}
         />
-        {!errors.dateOfBirth && warning ? <p className="mt-1 text-sm text-gold">{warning}</p> : null}
+        {!errors.dateOfBirth && warning ? <p className="mt-1 text-sm text-blue">{warning}</p> : null}
         {!errors.dateOfBirth && next ? <p className="mt-1 text-sm text-ink-soft">{next}</p> : null}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -140,7 +140,7 @@ export function MemberForm({
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
-            className="size-4 accent-clay"
+            className="size-4 accent-blue"
             checked={values.verified}
             onChange={(event) => update("verified", event.target.checked)}
           />
@@ -191,7 +191,7 @@ function TextField({
     <div>
       <label htmlFor={id} className={labelClass}>
         {label}
-        {required ? <span className="text-clay"> *</span> : null}
+        {required ? <span className="text-blue"> *</span> : null}
       </label>
       <input
         ref={inputRef}
@@ -208,7 +208,7 @@ function TextField({
         onChange={(event) => onChange(event.target.value)}
       />
       {error ? (
-        <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-clay">
+        <p id={`${id}-error`} role="alert" className="mt-1 text-sm text-blue">
           {error}
         </p>
       ) : null}

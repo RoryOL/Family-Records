@@ -41,8 +41,8 @@ export function BirthdaysPage() {
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <header className="flex flex-col gap-6 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-clay">{group.name}</p>
-          <h1 className="mt-2 font-serif text-4xl font-medium tracking-tight sm:text-5xl">Birthdays</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue">{group.name}</p>
+          <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">Birthdays</h1>
           <p className="mt-2 max-w-xl text-ink-soft">Upcoming dates as of {formatToday()}, with the age each person is turning.</p>
         </div>
         <button type="button" className={secondaryButtonClass} onClick={downloadCalendar}>
@@ -63,7 +63,7 @@ export function BirthdaysPage() {
               aria-pressed={selected}
               onClick={() => chooseWindow(window)}
               className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                selected ? "bg-ink text-paper-2" : "border border-line bg-paper-2 text-ink hover:border-ink"
+                selected ? "bg-blue text-white" : "border border-line bg-paper-2 text-ink hover:border-blue"
               }`}
             >
               Next {window} days
@@ -74,7 +74,7 @@ export function BirthdaysPage() {
       </div>
 
       {upcoming.length === 0 ? (
-        <p className="mt-6 rounded-2xl border border-dashed border-line bg-paper-2 px-5 py-12 text-center font-serif text-2xl">
+        <p className="mt-6 rounded-2xl border border-dashed border-line bg-paper-2 px-5 py-12 text-center font-display text-2xl font-bold">
           No birthdays in the next {within} days.
         </p>
       ) : (
@@ -85,15 +85,15 @@ export function BirthdaysPage() {
               <li key={item.memberId}>
                 <Link
                   to={`/members/${encodeURIComponent(item.memberId)}`}
-                  className="flex flex-col gap-2 rounded-2xl border border-line bg-paper-2 px-5 py-4 text-ink no-underline hover:border-ink sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-2 rounded-2xl border border-line bg-paper-2 px-5 py-4 text-ink no-underline hover:border-blue sm:flex-row sm:items-center sm:justify-between"
                 >
                   <span>
-                    <span className="block font-serif text-2xl font-medium">{item.fullName}</span>
+                    <span className="block font-display text-2xl font-bold">{item.fullName}</span>
                     <span className="mt-1 block text-sm text-ink-soft">
                       {item.relationship || "Family"} · Turns {item.turningAge}
                     </span>
                   </span>
-                  <span className={`text-sm font-semibold ${soon ? "text-clay" : "text-ink-soft"}`}>
+                  <span className={`text-sm font-semibold ${soon ? "text-blue" : "text-ink-soft"}`}>
                     {formatLongDate(item.nextOccurrence)} · {birthdayTiming(item.daysUntil)}
                   </span>
                 </Link>

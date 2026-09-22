@@ -9,10 +9,10 @@ export function BirthdayBanner({ onDismiss }: { onDismiss: () => void }) {
   if (soon.length === 0) return null;
 
   return (
-    <aside className="border-b border-line bg-gold-soft" aria-label="Birthday reminders">
+    <aside className="border-b border-line bg-blue-soft" aria-label="Birthday reminders">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:px-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold">Birthdays this week</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue">Birthdays this week</p>
           <ul className="mt-1 space-y-1 text-sm">
             {soon.map((item) => (
               <li key={item.memberId}>
