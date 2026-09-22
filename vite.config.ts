@@ -4,6 +4,12 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    allowedHosts: [".trycloudflare.com"],
+  },
+  preview: {
+    allowedHosts: [".trycloudflare.com"],
+  },
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
