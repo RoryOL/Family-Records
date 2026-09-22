@@ -1,4 +1,4 @@
-import type { Address, FamilyState, Member } from "../types";
+import type { Address, FamilyState, Member, MemberDraft } from "../types";
 
 const SEEDED_AT = "2026-01-15T18:00:00.000Z";
 const GROUP_ID = "grp_harpers";
@@ -260,4 +260,31 @@ export const mockFamily: FamilyState = {
 
 export function createInitialState(): FamilyState {
   return structuredClone(mockFamily);
+}
+
+/** Directory drafts for a new household that wants the Harper preview, without the sample login ids. */
+export function sampleMemberDrafts(): MemberDraft[] {
+  return createInitialState().members.map((member) => ({
+    firstName: member.firstName,
+    lastName: member.lastName,
+    fullName: member.fullName,
+    relationship: member.relationship,
+    dateOfBirth: member.dateOfBirth,
+    phone: member.phone,
+    email: member.email,
+    notes: member.notes,
+    address: member.address
+      ? {
+          format: member.address.format,
+          line1: member.address.line1,
+          line2: member.address.line2,
+          line3: member.address.line3,
+          city: member.address.city,
+          region: member.address.region,
+          postalCode: member.address.postalCode,
+          country: member.address.country,
+          verified: member.address.verified,
+        }
+      : null,
+  }));
 }

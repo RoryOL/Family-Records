@@ -20,6 +20,8 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
   const missing = intent === "existing" && !member;
   const editing = !missing && (intent === "create" || searchParams.get("edit") === "1");
   const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [pending, setPending] = useState<"discard" | "delete" | null>(null);
   const [closeTarget, setCloseTarget] = useState<CloseTarget>("directory");
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -73,21 +75,38 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
     if (event.target === event.currentTarget) requestClose("directory");
   }
 
-  function save(draft: Parameters<typeof addMember>[0]) {
-    if (intent === "create") {
-      const created = addMember(draft);
-      navigate(withSearch(`/members/${encodeURIComponent(created.id)}`, withoutEdit(searchParams)), { replace: true });
-      return;
+  async function save(draft: Parameters<typeof addMember>[0]) {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      if (intent === "create") {
+        const created = await addMember(draft);
+        navigate(withSearch(`/members/${encodeURIComponent(created.id)}`, withoutEdit(searchParams)), { replace: true });
+        return;
+      }
+      if (!member) return;
+      await updateMember(member.id, draft);
+      performClose("view");
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "That change could not be saved.");
+    } finally {
+      setSaving(false);
     }
-    if (!member) return;
-    updateMember(member.id, draft);
-    performClose("view");
   }
 
-  function remove() {
+  async function remove() {
     if (!member) return;
-    removeMember(member.id);
-    navigate(withSearch("/", withoutEdit(searchParams)));
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await removeMember(member.id);
+      navigate(withSearch("/", withoutEdit(searchParams)));
+    } catch (error) {
+      setPending(null);
+      setSaveError(error instanceof Error ? error.message : "That person could not be removed.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -104,7 +123,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
             <h2 id="member-drawer-title" ref={titleRef} tabIndex={-1} className="font-display text-3xl font-bold tracking-tight outline-none">
               {title}
             </h2>
-            {intent === "create" ? <p className="mt-1 text-sm text-stone-500">Saved in this browser tab.</p> : null}
+            {intent === "create" ? <p className="mt-1 text-sm text-stone-500">Saved for this household.</p> : null}
           </div>
           <button type="button" className="rounded-full p-2 text-stone-500 transition-all duration-200 ease-out hover:bg-amber-50 hover:text-stone-850" aria-label="Close" onClick={() => requestClose("directory")}>
             <X size={18} aria-hidden />
@@ -112,6 +131,11 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8">
+          {saveError ? (
+            <p className="mb-4 text-sm text-terracotta-deep" role="alert">
+              {saveError}
+            </p>
+          ) : null}
           {missing ? (
             <p className="text-sm text-stone-500">This person is no longer in the household.</p>
           ) : editing ? (
@@ -145,14 +169,14 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
             />
           ) : editing ? (
             <div className="flex flex-wrap gap-2">
-              <button type="submit" form="member-form" className={primaryButtonClass}>
+              <button type="submit" form="member-form" className={primaryButtonClass} disabled={saving}>
                 {intent === "create" ? "Add member" : "Save changes"}
               </button>
-              <button type="button" className={secondaryButtonClass} onClick={() => requestClose(intent === "existing" ? "view" : "directory")}>
+              <button type="button" className={secondaryButtonClass} disabled={saving} onClick={() => requestClose(intent === "existing" ? "view" : "directory")}>
                 Cancel
               </button>
               {member ? (
-                <button type="button" className="px-3 py-2 text-sm font-semibold text-terracotta-deep" onClick={() => setPending("delete")}>
+                <button type="button" className="px-3 py-2 text-sm font-semibold text-terracotta-deep" disabled={saving} onClick={() => setPending("delete")}>
                   Remove
                 </button>
               ) : null}

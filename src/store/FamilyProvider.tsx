@@ -1,6 +1,23 @@
-import { createContext, useContext, useMemo, useReducer, type ReactNode } from "react";
-import { createInitialState } from "../data/mockFamily";
-import { createMember } from "../lib/members";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { Session } from "@supabase/supabase-js";
+import { AuthPage } from "../auth/AuthPage";
+import { GateFrame } from "../auth/GateFrame";
+import { primaryButtonClass } from "../directory/styles";
+import { HouseholdPage } from "../auth/HouseholdPage";
+import { SetupPage } from "../auth/SetupPage";
+import { createMember, mergeMember } from "../lib/members";
+import { getSupabase, supabaseConfig } from "../supabase/client";
+import {
+  createFamilyGroup,
+  deleteStoredMember,
+  insertMembers,
+  joinFamilyGroup,
+  loadFamily,
+  signOut as endSession,
+  updateStoredMember,
+} from "../supabase/familyApi";
+import { friendlySupabaseMessage } from "../supabase/messages";
+import { ensureMemberIds } from "../supabase/rows";
 import { familyReducer } from "./familyReducer";
 import type { FamilyState, FamilyUser, Member, MemberDraft, MemberPatch } from "../types";
 
@@ -10,23 +27,115 @@ export interface FamilyContextValue {
   currentUser: FamilyUser;
   members: Member[];
   getMember: (id: string) => Member | undefined;
-  addMember: (draft: MemberDraft) => Member;
-  importMembers: (drafts: readonly MemberDraft[]) => Member[];
-  updateMember: (id: string, patch: MemberPatch) => void;
-  removeMember: (id: string) => void;
-  reset: () => void;
+  addMember: (draft: MemberDraft) => Promise<Member>;
+  importMembers: (drafts: readonly MemberDraft[]) => Promise<Member[]>;
+  updateMember: (id: string, patch: MemberPatch) => Promise<void>;
+  removeMember: (id: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
+type Phase = "loading" | "unconfigured" | "signed-out" | "needs-household" | "ready" | "error";
+
 const FamilyContext = createContext<FamilyContextValue | null>(null);
+const configured = supabaseConfig() !== null;
 
 export function FamilyProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(familyReducer, undefined, createInitialState);
+  const [session, setSession] = useState<Session | null>(null);
+  const [phase, setPhase] = useState<Phase>(configured ? "loading" : "unconfigured");
+  const [state, setState] = useState<FamilyState | null>(null);
+  const [gateError, setGateError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const seenUserId = useRef<string | null>(null);
 
-  const value = useMemo<FamilyContextValue>(() => {
-    const currentUser = state.people.find((person) => person.id === state.currentUserId);
-    if (!currentUser) {
-      throw new Error("The family store has no current user.");
+  useEffect(() => {
+    if (!configured) return;
+    const supabase = getSupabase();
+    let active = true;
+    seenUserId.current = null;
+
+    function apply(next: Session | null) {
+      if (!active) return;
+      const userId = next?.user.id ?? null;
+      setSession(next);
+      if (userId && userId === seenUserId.current) return;
+      seenUserId.current = userId;
+      if (!next) {
+        setState(null);
+        setPhase("signed-out");
+        return;
+      }
+
+      setPhase("loading");
+      void loadFamily(next.user)
+        .then((family) => {
+          if (!active) return;
+          setState(family);
+          setGateError(null);
+          setPhase(family ? "ready" : "needs-household");
+        })
+        .catch((error: unknown) => {
+          if (!active) return;
+          setGateError(error instanceof Error ? error.message : "The household could not be opened.");
+          setPhase("error");
+        });
     }
+
+    void supabase.auth.getSession().then(({ data: sessionData, error }) => {
+      if (!active) return;
+      if (error) {
+        setGateError(friendlySupabaseMessage(error.message));
+        setPhase("error");
+        return;
+      }
+      apply(sessionData.session);
+    });
+    const { data } = supabase.auth.onAuthStateChange((event, next) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT") return;
+      apply(next);
+    });
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, [attempt]);
+
+  const groupId = state?.group.id ?? null;
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
+
+  useEffect(() => {
+    if (phase !== "ready" || !groupId) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const reload = () => {
+      const current = sessionRef.current;
+      if (!current || document.querySelector("dialog[open]")) return;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        void loadFamily(current.user)
+          .then((family) => {
+            if (family && family.group.id === groupId) setState(family);
+          })
+          .catch(() => undefined);
+      }, 250);
+    };
+    window.addEventListener("focus", reload);
+    const channel = getSupabase()
+      .channel(`household-${groupId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "members" }, reload)
+      .on("postgres_changes", { event: "*", schema: "public", table: "addresses" }, reload)
+      .on("postgres_changes", { event: "*", schema: "public", table: "family_users" }, reload)
+      .subscribe();
+    return () => {
+      window.removeEventListener("focus", reload);
+      clearTimeout(timer);
+      void getSupabase().removeChannel(channel);
+    };
+  }, [phase, groupId]);
+
+  const value = useMemo<FamilyContextValue | null>(() => {
+    if (!state) return null;
+    const currentUser = state.people.find((person) => person.id === state.currentUserId);
+    if (!currentUser) return null;
 
     return {
       group: state.group,
@@ -36,27 +145,76 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
       getMember(id) {
         return state.members.find((member) => member.id === id);
       },
-      addMember(draft) {
-        const member = createMember(state.group.id, draft);
-        dispatch({ type: "add", member });
+      async addMember(draft) {
+        const member = ensureMemberIds(createMember(state.group.id, draft));
+        await insertMembers([member]);
+        setState(familyReducer(state, { type: "add", member }));
         return member;
       },
-      importMembers(drafts) {
-        const members = drafts.map((draft) => createMember(state.group.id, draft));
-        dispatch({ type: "import", members });
+      async importMembers(drafts) {
+        const members = drafts.map((draft) => ensureMemberIds(createMember(state.group.id, draft)));
+        await insertMembers(members);
+        setState(familyReducer(state, { type: "import", members }));
         return members;
       },
-      updateMember(id, patch) {
-        dispatch({ type: "update", id, patch, updatedAt: new Date().toISOString() });
+      async updateMember(id, patch) {
+        const existing = state.members.find((member) => member.id === id);
+        if (!existing) return;
+        const member = ensureMemberIds(mergeMember(existing, patch, new Date().toISOString()));
+        await updateStoredMember(member);
+        setState({ ...state, members: state.members.map((item) => (item.id === id ? member : item)) });
       },
-      removeMember(id) {
-        dispatch({ type: "remove", id });
+      async removeMember(id) {
+        await deleteStoredMember(id);
+        setState(familyReducer(state, { type: "remove", id }));
       },
-      reset() {
-        dispatch({ type: "reset" });
+      async signOut() {
+        seenUserId.current = null;
+        await endSession();
       },
     };
   }, [state]);
+
+  async function refreshHousehold() {
+    if (!session) throw new Error("Sign in before opening a household.");
+    const family = await loadFamily(session.user);
+    if (!family) throw new Error("The household could not be opened.");
+    setState(family);
+    setPhase("ready");
+  }
+
+  if (phase === "unconfigured") return <SetupPage />;
+  if (phase === "loading") return <GateFrame title="Kinfolk" lede="Opening your household…" />;
+  if (phase === "error") {
+    return (
+      <GateFrame title="Kinfolk" lede={gateError ?? "The household could not be opened."}>
+        <button type="button" className={`${primaryButtonClass} mt-8`} onClick={() => setAttempt((current) => current + 1)}>
+          Try again
+        </button>
+      </GateFrame>
+    );
+  }
+  if (phase === "signed-out") return <AuthPage />;
+  if (phase === "needs-household") {
+    return (
+      <HouseholdPage
+        email={session?.user.email ?? ""}
+        onCreate={async (name, description) => {
+          await createFamilyGroup(name, description);
+          await refreshHousehold();
+        }}
+        onJoin={async (inviteCode) => {
+          await joinFamilyGroup(inviteCode);
+          await refreshHousehold();
+        }}
+        onSignOut={async () => {
+          seenUserId.current = null;
+          await endSession();
+        }}
+      />
+    );
+  }
+  if (!value) return <GateFrame title="Kinfolk" lede="Opening your household…" />;
 
   return <FamilyContext.Provider value={value}>{children}</FamilyContext.Provider>;
 }

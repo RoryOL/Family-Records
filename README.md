@@ -1,22 +1,29 @@
 # Kinfolk
 
-A family directory for people, birthdays, and mailing addresses. Profiles live in an in-memory store so the interface can be used before Supabase is connected.
+A family directory for people, birthdays, and mailing addresses. Accounts, households, and profiles are stored in Supabase. Members of a household can read and update the directory. Someone with the invite code can join as an editor.
 
 ## Run
 
 ```bash
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-`npm test` checks the store, directory filters, the member form, birthday windows, calendar export, and mailing labels. `npm run build` typechecks and builds the Vite app.
+Fill `.env` with the project URL and the anon key from Supabase → Project Settings → API. Leave the service role key out of the app.
+
+In the Supabase SQL editor, run `supabase/migrations/20260922120000_kinfolk_household.sql`. Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
+
+`npm test` checks the store, directory filters, the member form, birthday windows, calendar export, mailing labels, spreadsheet import, and the Supabase row mapping. `npm run build` typechecks and builds the Vite app.
 
 ## Layout
 
 ```
 src/
   types/index.ts                 Member, Address, FamilyGroup, and related contracts
-  data/mockFamily.ts             The Harpers mock household
+  data/mockFamily.ts             Harper sample drafts for an empty household
+  auth/                          Sign-in, create household, and join with an invite
+  supabase/                      Client, row mapping, and household reads and writes
   directory/                     Cards, table, search, and the member drawer
   birthdays/                     7, 30, and 90 day birthday tracker
   cards/                         Greeting-card addresses, copy, and CSV export
@@ -24,10 +31,9 @@ src/
   shell/                         Navigation and the 7-day reminder banner
   lib/                           Dates, birthdays, calendar, addresses, and member helpers
   store/FamilyProvider.tsx       FamilyProvider and useFamily()
+supabase/migrations/             Household tables, invite functions, and row level security
 ```
 
-`/` is the directory. `/birthdays` lists upcoming birthdays and downloads an `.ics` calendar. `/cards` shows verified mailing addresses, with copy and CSV export. `/import` accepts a CSV, XLS, or XLSX file, maps the columns, and adds the rows that pass the check. Edits stay in the tab. Reloading restores the sample household.
+`/` is the directory. `/birthdays` lists upcoming birthdays and downloads an `.ics` calendar. `/cards` shows verified mailing addresses, with copy and CSV export. `/import` accepts a CSV, XLS, or XLSX file, maps the columns, and adds the rows that pass the check.
 
-## Later
-
-Supabase auth with row level security is not built yet. The Supabase client is not installed.
+Sign in with email and password. Create a household, or join one with its invite code. The code is on the directory header. Editors can read and update people. Imported and new addresses stay unverified until someone marks them for mail. An empty household can add the Harper sample so the birthday and mailing screens have people to show.

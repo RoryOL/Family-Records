@@ -1,6 +1,7 @@
 import { FileSpreadsheet, LayoutGrid, Plus, Table } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, Outlet, useSearchParams } from "react-router";
+import { sampleMemberDrafts } from "../data/mockFamily";
 import { filterMembers, listRelationships, parseDirectoryView } from "./filters";
 import { MemberCard } from "./MemberCard";
 import { MemberTable } from "./MemberTable";
@@ -9,9 +10,10 @@ import { inputClass, labelClass, pageClass, primaryButtonClass, secondaryButtonC
 import { useFamily } from "../store/FamilyProvider";
 
 export function DirectoryPage() {
-  const { group, currentUser, members, reset } = useFamily();
+  const { group, currentUser, members, importMembers } = useFamily();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [armReset, setArmReset] = useState(false);
+  const [sampling, setSampling] = useState(false);
+  const [sampleError, setSampleError] = useState<string | null>(null);
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   const relationship = searchParams.get("relationship") ?? "";
   const view = parseDirectoryView(searchParams.get("view"));
@@ -30,7 +32,6 @@ export function DirectoryPage() {
     if (value) next.set(key, value);
     else next.delete(key);
     setSearchParams(next, { replace: true });
-    setArmReset(false);
   }
 
   function clearFilters() {
@@ -79,10 +80,7 @@ export function DirectoryPage() {
             className={inputClass}
             placeholder="Name or relationship"
             value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setArmReset(false);
-            }}
+            onChange={(event) => setQuery(event.target.value)}
           />
         </div>
         <div className="lg:w-56">
@@ -128,7 +126,31 @@ export function DirectoryPage() {
             <button type="button" className={`${primaryButtonClass} mt-4`} onClick={clearFilters}>
               Clear filters
             </button>
-          ) : null}
+          ) : (
+            <div className="mt-4">
+              <button
+                type="button"
+                className={primaryButtonClass}
+                disabled={sampling}
+                onClick={() => {
+                  setSampling(true);
+                  setSampleError(null);
+                  void importMembers(sampleMemberDrafts())
+                    .catch((error: unknown) => {
+                      setSampleError(error instanceof Error ? error.message : "The sample household could not be added.");
+                    })
+                    .finally(() => setSampling(false));
+                }}
+              >
+                Add the Harper sample
+              </button>
+              {sampleError ? (
+                <p className="mt-3 text-sm text-terracotta-deep" role="alert">
+                  {sampleError}
+                </p>
+              ) : null}
+            </div>
+          )}
         </div>
       ) : view === "table" ? (
         <div className="mt-6">
@@ -144,29 +166,8 @@ export function DirectoryPage() {
         </ul>
       )}
 
-      <footer className="mt-12 flex flex-col gap-3 border-t border-stone-200/60 pt-6 text-sm text-stone-500 sm:flex-row sm:items-center sm:justify-between">
-        <p>Changes stay in this browser tab. Reloading restores the sample household.</p>
-        {armReset ? (
-          <span className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              className="font-semibold text-stone-850"
-              onClick={() => {
-                reset();
-                setArmReset(false);
-              }}
-            >
-              Restore sample household
-            </button>
-            <button type="button" className="font-semibold text-stone-500" onClick={() => setArmReset(false)}>
-              Cancel
-            </button>
-          </span>
-        ) : (
-          <button type="button" className="self-start font-semibold text-stone-850" onClick={() => setArmReset(true)}>
-            Reset sample data
-          </button>
-        )}
+      <footer className="mt-12 border-t border-stone-200/60 pt-6 text-sm text-stone-500">
+        <p>Saved for everyone in this household. Share the invite code so someone else can read and update it too.</p>
       </footer>
       <Outlet />
     </main>

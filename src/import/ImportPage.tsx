@@ -14,6 +14,7 @@ export function ImportPage() {
   const [included, setIncluded] = useState<Set<number>>(new Set());
   const [fileError, setFileError] = useState<string | null>(null);
   const [added, setAdded] = useState(0);
+  const [saving, setSaving] = useState(false);
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
@@ -75,13 +76,21 @@ export function ImportPage() {
     });
   }
 
-  function commit(event: FormEvent) {
+  async function commit(event: FormEvent) {
     event.preventDefault();
     const drafts = plans.flatMap((plan) => (plan.draft && included.has(plan.rowNumber) ? [plan.draft] : []));
     if (drafts.length === 0) return;
-    importMembers(drafts);
-    setAdded(drafts.length);
-    setIncluded(new Set());
+    setSaving(true);
+    setFileError(null);
+    try {
+      await importMembers(drafts);
+      setAdded(drafts.length);
+      setIncluded(new Set());
+    } catch (error) {
+      setFileError(error instanceof Error ? error.message : "Those people could not be added.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   const ready = plans.filter((plan) => plan.draft && included.has(plan.rowNumber)).length;
@@ -96,7 +105,7 @@ export function ImportPage() {
         </p>
       </header>
 
-      <form className="mt-8 grid gap-8" onSubmit={commit}>
+      <form className="mt-8 grid gap-8" onSubmit={(event) => void commit(event)}>
         <label
           className={`${surfaceClass} flex cursor-pointer flex-col items-center gap-3 px-6 py-12 text-center ${
             dragging ? "border-terracotta bg-amber-50" : ""
@@ -219,7 +228,7 @@ export function ImportPage() {
             </section>
 
             <div className="flex flex-wrap items-center gap-3">
-              <button type="submit" className={primaryButtonClass} disabled={ready === 0}>
+              <button type="submit" className={primaryButtonClass} disabled={ready === 0 || saving}>
                 Add {ready} {ready === 1 ? "person" : "people"}
               </button>
               {added > 0 ? (
