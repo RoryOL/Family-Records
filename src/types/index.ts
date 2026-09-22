@@ -12,10 +12,15 @@ export type IsoDateTime = string;
 /** Owner manages the group. Editors can read and update member details. */
 export type FamilyRole = "owner" | "editor";
 
+/** Irish layout is the household default. International keeps street, region, and country. */
+export type AddressFormat = "ie" | "international";
+
 export interface Address {
   id: string;
+  format: AddressFormat;
   line1: string;
   line2: string;
+  line3: string;
   city: string;
   region: string;
   postalCode: string;
@@ -27,7 +32,11 @@ export interface Address {
   verified: boolean;
 }
 
-export type AddressInput = Omit<Address, "id"> & { id?: string };
+export type AddressInput = Omit<Address, "id" | "line3" | "format"> & {
+  id?: string;
+  line3?: string;
+  format?: AddressFormat;
+};
 
 export interface Member {
   id: string;

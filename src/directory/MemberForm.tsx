@@ -129,14 +129,38 @@ export function MemberForm({
       </div>
       <fieldset className="grid gap-4">
         <legend className={labelClass}>Postal address</legend>
-        <TextField id={`${baseId}-line1`} label="Street" autoComplete="address-line1" value={values.line1} onChange={(value) => update("line1", value)} />
-        <TextField id={`${baseId}-line2`} label="Apartment, suite" autoComplete="address-line2" value={values.line2} onChange={(value) => update("line2", value)} />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <TextField id={`${baseId}-city`} label="City" autoComplete="address-level2" value={values.city} onChange={(value) => update("city", value)} />
-          <TextField id={`${baseId}-region`} label="Region" autoComplete="address-level1" value={values.region} onChange={(value) => update("region", value)} />
-          <TextField id={`${baseId}-postal`} label="Postal code" autoComplete="postal-code" value={values.postalCode} onChange={(value) => update("postalCode", value)} />
-          <TextField id={`${baseId}-country`} label="Country" autoComplete="country-name" value={values.country} onChange={(value) => update("country", value)} />
-        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="size-4 accent-terracotta"
+            checked={values.addressFormat === "international"}
+            onChange={(event) => update("addressFormat", event.target.checked ? "international" : "ie")}
+          />
+          International address
+        </label>
+        {values.addressFormat === "international" ? (
+          <>
+            <TextField id={`${baseId}-line1`} label="Street" autoComplete="address-line1" value={values.line1} onChange={(value) => update("line1", value)} />
+            <TextField id={`${baseId}-line2`} label="Apartment, suite" autoComplete="address-line2" value={values.line2} onChange={(value) => update("line2", value)} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField id={`${baseId}-city`} label="City" autoComplete="address-level2" value={values.city} onChange={(value) => update("city", value)} />
+              <TextField id={`${baseId}-region`} label="Region" autoComplete="address-level1" value={values.region} onChange={(value) => update("region", value)} />
+              <TextField id={`${baseId}-postal`} label="Postal code" autoComplete="postal-code" value={values.postalCode} onChange={(value) => update("postalCode", value)} />
+              <TextField id={`${baseId}-country`} label="Country" autoComplete="country-name" value={values.country} onChange={(value) => update("country", value)} />
+            </div>
+          </>
+        ) : (
+          <>
+            <TextField id={`${baseId}-line1`} label="Address line 1" autoComplete="address-line1" value={values.line1} onChange={(value) => update("line1", value)} />
+            <TextField id={`${baseId}-line2`} label="Address line 2" autoComplete="address-line2" value={values.line2} onChange={(value) => update("line2", value)} />
+            <TextField id={`${baseId}-line3`} label="Address line 3" autoComplete="address-line3" value={values.line3} onChange={(value) => update("line3", value)} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextField id={`${baseId}-city`} label="Town/City" autoComplete="address-level2" value={values.city} onChange={(value) => update("city", value)} />
+              <TextField id={`${baseId}-region`} label="County" autoComplete="address-level1" value={values.region} onChange={(value) => update("region", value)} />
+            </div>
+            <TextField id={`${baseId}-postal`} label="Eircode" autoComplete="postal-code" value={values.postalCode} onChange={(value) => update("postalCode", value)} />
+          </>
+        )}
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"

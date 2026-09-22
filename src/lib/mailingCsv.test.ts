@@ -32,8 +32,10 @@ describe("mailing export", () => {
       email: null,
       address: {
         id: "adr_csv",
+        format: "international",
         line1: "10 Downing Street",
         line2: "Apt, 4",
+        line3: "",
         city: "London",
         region: "Greater London",
         postalCode: "SW1A 2AA",
@@ -47,7 +49,7 @@ describe("mailing export", () => {
     };
 
     const csv = mailingCsv([member]);
-    expect(csv.startsWith("\uFEFFName,Street,Line 2,City,Region,Postal code,Country\r\n")).toBe(true);
-    expect(csv).toContain("'=Ada Lovelace,10 Downing Street,\"Apt, 4\",London,Greater London,SW1A 2AA,United Kingdom");
+    expect(csv.startsWith("\uFEFFName,Address line 1,Address line 2,Address line 3,Town/City,County/Region,Eircode/Postal code,Country\r\n")).toBe(true);
+    expect(csv).toContain("'=Ada Lovelace,10 Downing Street,\"Apt, 4\",,London,Greater London,SW1A 2AA,United Kingdom");
   });
 });

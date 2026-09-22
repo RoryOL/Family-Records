@@ -23,15 +23,25 @@ function normalizeDate(value: string | null): string | null {
   return trimmed;
 }
 
+function isIreland(country: string): boolean {
+  const name = country.trim().toLowerCase();
+  return name === "ireland" || name === "éire" || name === "eire" || name === "ie";
+}
+
 export function normalizeAddress(input: AddressInput): Address {
+  const format = input.format ?? (isIreland(input.country) || !input.country.trim() ? "ie" : "international");
+  const country = input.country.trim() || (format === "ie" ? "Ireland" : "");
+
   return {
     id: input.id ?? createId("adr"),
+    format,
     line1: input.line1.trim(),
     line2: input.line2.trim(),
+    line3: (input.line3 ?? "").trim(),
     city: input.city.trim(),
     region: input.region.trim(),
     postalCode: input.postalCode.trim(),
-    country: input.country.trim(),
+    country,
     verified: input.verified,
   };
 }

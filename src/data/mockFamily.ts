@@ -9,8 +9,12 @@ const GROUP_ID = "grp_harpers";
  * Samir today, Marcus in 2 days, Jonah in 5, Willa in 20,
  * Ruth in 42, Arthur in 88.
  */
+function internationalAddress(address: Omit<Address, "format" | "line3">): Address {
+  return { format: "international", line3: "", ...address };
+}
+
 function harperHome(id: string): Address {
-  return {
+  return internationalAddress({
     id,
     line1: "1842 Willow Lane",
     line2: "Apt 4",
@@ -19,11 +23,11 @@ function harperHome(id: string): Address {
     postalCode: "97214",
     country: "United States",
     verified: true,
-  };
+  });
 }
 
 function ellisonHome(id: string): Address {
-  return {
+  return internationalAddress({
     id,
     line1: "88 Cedar Court",
     line2: "",
@@ -32,7 +36,7 @@ function ellisonHome(id: string): Address {
     postalCode: "97701",
     country: "United States",
     verified: true,
-  };
+  });
 }
 
 function profile(fields: {
@@ -168,7 +172,7 @@ export const mockFamily: FamilyState = {
       dateOfBirth: "1991-01-19",
       phone: "(206) 555-0133",
       email: "nora.blake@example.com",
-      address: {
+      address: internationalAddress({
         id: "adr_nora",
         line1: "901 Pine Street",
         line2: "Unit 12",
@@ -177,7 +181,7 @@ export const mockFamily: FamilyState = {
         postalCode: "98101",
         country: "United States",
         verified: true,
-      },
+      }),
       notes: "Elena's sister. Uses Blake as her mailing name.",
     }),
     profile({
@@ -188,7 +192,7 @@ export const mockFamily: FamilyState = {
       dateOfBirth: "1994-09-21",
       phone: "(415) 555-0188",
       email: "samir.shah@example.com",
-      address: {
+      address: internationalAddress({
         id: "adr_samir",
         line1: "44 Clement Street",
         line2: "",
@@ -197,7 +201,7 @@ export const mockFamily: FamilyState = {
         postalCode: "94118",
         country: "United States",
         verified: true,
-      },
+      }),
       notes: "",
     }),
     profile({
@@ -208,7 +212,7 @@ export const mockFamily: FamilyState = {
       dateOfBirth: null,
       phone: "(415) 555-0104",
       email: "priya.shah@example.com",
-      address: {
+      address: internationalAddress({
         id: "adr_priya",
         line1: "12 Market Street",
         line2: "",
@@ -217,7 +221,7 @@ export const mockFamily: FamilyState = {
         postalCode: "",
         country: "United States",
         verified: false,
-      },
+      }),
       notes: "Birthday unknown. Address is incomplete — do not mail yet.",
     }),
     profile({
@@ -228,7 +232,7 @@ export const mockFamily: FamilyState = {
       dateOfBirth: "1962-08-30",
       phone: "(206) 555-0190",
       email: "helen.cho@example.com",
-      address: {
+      address: internationalAddress({
         id: "adr_helen",
         line1: "415 Lake Street",
         line2: "",
@@ -237,7 +241,7 @@ export const mockFamily: FamilyState = {
         postalCode: "98102",
         country: "United States",
         verified: true,
-      },
+      }),
       notes: "Marcus's aunt.",
     }),
     profile({

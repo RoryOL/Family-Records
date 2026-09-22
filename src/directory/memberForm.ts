@@ -1,6 +1,6 @@
 import { parseIsoDate } from "../lib/dates";
 import { fullNameFrom } from "../lib/members";
-import type { AddressInput, Member, MemberDraft } from "../types";
+import type { AddressFormat, AddressInput, Member, MemberDraft } from "../types";
 
 export interface MemberFormValues {
   firstName: string;
@@ -9,8 +9,10 @@ export interface MemberFormValues {
   dateOfBirth: string;
   phone: string;
   email: string;
+  addressFormat: AddressFormat;
   line1: string;
   line2: string;
+  line3: string;
   city: string;
   region: string;
   postalCode: string;
@@ -33,12 +35,14 @@ export function emptyFormValues(): MemberFormValues {
     dateOfBirth: "",
     phone: "",
     email: "",
+    addressFormat: "ie",
     line1: "",
     line2: "",
+    line3: "",
     city: "",
     region: "",
     postalCode: "",
-    country: "",
+    country: "Ireland",
     verified: false,
     notes: "",
   };
@@ -52,12 +56,14 @@ export function memberToFormValues(member: Member): MemberFormValues {
     dateOfBirth: member.dateOfBirth ?? "",
     phone: member.phone ?? "",
     email: member.email ?? "",
+    addressFormat: member.address?.format ?? "ie",
     line1: member.address?.line1 ?? "",
     line2: member.address?.line2 ?? "",
+    line3: member.address?.line3 ?? "",
     city: member.address?.city ?? "",
     region: member.address?.region ?? "",
     postalCode: member.address?.postalCode ?? "",
-    country: member.address?.country ?? "",
+    country: member.address?.country ?? "Ireland",
     verified: member.address?.verified ?? false,
     notes: member.notes,
   };
@@ -109,19 +115,25 @@ export function formValuesToDraft(values: MemberFormValues, addressId?: string):
 }
 
 function addressFromForm(values: MemberFormValues, addressId?: string): AddressInput | null {
-  const hasText = [values.line1, values.line2, values.city, values.region, values.postalCode, values.country].some(
-    (part) => part.trim(),
-  );
+  const country = values.country.trim();
+  const countryCounts = values.addressFormat === "international" && country.length > 0 && country.toLowerCase() !== "ireland";
+  const hasText =
+    countryCounts ||
+    [values.line1, values.line2, values.line3, values.city, values.region, values.postalCode].some((part) => part.trim());
   if (!hasText && !values.verified) return null;
+
+  const storedCountry = country || (values.addressFormat === "ie" ? "Ireland" : "");
 
   return {
     id: addressId,
+    format: values.addressFormat,
     line1: values.line1,
     line2: values.line2,
+    line3: values.line3,
     city: values.city,
     region: values.region,
     postalCode: values.postalCode,
-    country: values.country,
+    country: storedCountry,
     verified: values.verified,
   };
 }

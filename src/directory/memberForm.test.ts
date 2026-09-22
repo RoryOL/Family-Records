@@ -19,7 +19,29 @@ describe("member form", () => {
     expect(draft.fullName).toBe("Elena Harper");
     expect(draft.address?.id).toBe("adr_elena");
     expect(draft.address?.line1).toBe("1842 Willow Lane");
+    expect(draft.address?.format).toBe("international");
     expect(draft.address?.verified).toBe(true);
+  });
+
+  it("starts a new address in the Irish layout and keeps a third line", () => {
+    expect(emptyFormValues().addressFormat).toBe("ie");
+    const draft = formValuesToDraft({
+      ...emptyFormValues(),
+      firstName: "Aoife",
+      line1: "12 Main Street",
+      line3: "The Green",
+      city: "Malahide",
+      region: "Dublin",
+      postalCode: "K36 AB12",
+    });
+    expect(draft.address).toMatchObject({
+      format: "ie",
+      line1: "12 Main Street",
+      line3: "The Green",
+      city: "Malahide",
+      region: "Dublin",
+      country: "Ireland",
+    });
   });
 
   it("requires a first name and rejects a bad email or impossible date", () => {
