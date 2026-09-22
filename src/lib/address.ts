@@ -10,18 +10,23 @@ export function missingAddressParts(address: Address): string[] {
   return missing;
 }
 
-/** Standard postal block: name, street lines, city/region/code, country. */
-export function formatPostalAddress(fullName: string, address: Address): string {
+/** Street, locality, and country, without the recipient's name. */
+export function formatAddressBlock(address: Address): string {
   const regionLine = [address.region, address.postalCode]
     .map((part) => part.trim())
     .filter((part) => part.length > 0)
     .join(" ");
   const locality = [address.city.trim(), regionLine].filter((part) => part.length > 0).join(", ");
 
-  return [fullName, address.line1, address.line2, locality, address.country]
+  return [address.line1, address.line2, locality, address.country]
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
     .join("\n");
+}
+
+/** Standard postal block: name, street lines, city/region/code, country. */
+export function formatPostalAddress(fullName: string, address: Address): string {
+  return [fullName.trim(), formatAddressBlock(address)].filter((line) => line.length > 0).join("\n");
 }
 
 export function formatMailingLabel(member: Pick<Member, "fullName" | "address">): string | null {
