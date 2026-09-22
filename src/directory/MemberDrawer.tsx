@@ -98,22 +98,22 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
       onCancel={onCancel}
       onMouseDown={onBackdrop}
     >
-      <div className="flex h-full w-full flex-col bg-paper-2 sm:w-[32rem] sm:border-l sm:border-line">
-        <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
+      <div className="flex h-full w-full flex-col bg-white shadow-warm sm:w-[36rem] sm:border-l sm:border-stone-200/60">
+        <header className="flex items-start justify-between gap-4 border-b border-stone-200/60 px-6 py-6 sm:px-8">
           <div>
-            <h2 id="member-drawer-title" ref={titleRef} tabIndex={-1} className="font-display text-3xl font-bold outline-none">
+            <h2 id="member-drawer-title" ref={titleRef} tabIndex={-1} className="font-display text-3xl font-bold tracking-tight outline-none">
               {title}
             </h2>
-            {intent === "create" ? <p className="mt-1 text-sm text-ink-soft">Saved in this browser tab.</p> : null}
+            {intent === "create" ? <p className="mt-1 text-sm text-stone-500">Saved in this browser tab.</p> : null}
           </div>
-          <button type="button" className="rounded-full p-2 text-ink-soft hover:bg-paper hover:text-ink" aria-label="Close" onClick={() => requestClose("directory")}>
+          <button type="button" className="rounded-full p-2 text-stone-500 transition-all duration-200 ease-out hover:bg-amber-50 hover:text-stone-850" aria-label="Close" onClick={() => requestClose("directory")}>
             <X size={18} aria-hidden />
           </button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8">
           {missing ? (
-            <p className="text-sm text-ink-soft">This person is no longer in the household.</p>
+            <p className="text-sm text-stone-500">This person is no longer in the household.</p>
           ) : editing ? (
             <MemberForm
               key={member ? `${member.id}:${member.updatedAt}` : "new"}
@@ -128,7 +128,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
           ) : null}
         </div>
 
-        <footer className="border-t border-line px-5 py-4">
+        <footer className="border-t border-stone-200/60 px-6 py-5 sm:px-8">
           {pending === "discard" ? (
             <Confirm
               message="Discard unsaved changes?"
@@ -152,7 +152,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
                 Cancel
               </button>
               {member ? (
-                <button type="button" className="px-3 py-2 text-sm font-semibold text-blue" onClick={() => setPending("delete")}>
+                <button type="button" className="px-3 py-2 text-sm font-semibold text-terracotta-deep" onClick={() => setPending("delete")}>
                   Remove
                 </button>
               ) : null}
@@ -168,7 +168,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
                 {member ? "Close" : "Back to directory"}
               </button>
               {member ? (
-                <button type="button" className="px-3 py-2 text-sm font-semibold text-blue" onClick={() => setPending("delete")}>
+                <button type="button" className="px-3 py-2 text-sm font-semibold text-terracotta-deep" onClick={() => setPending("delete")}>
                   Remove
                 </button>
               ) : null}

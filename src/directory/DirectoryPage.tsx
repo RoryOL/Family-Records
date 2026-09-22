@@ -5,7 +5,7 @@ import { filterMembers, listRelationships, parseDirectoryView } from "./filters"
 import { MemberCard } from "./MemberCard";
 import { MemberTable } from "./MemberTable";
 import { withSearch, withoutEdit } from "./paths";
-import { inputClass, labelClass, primaryButtonClass } from "./styles";
+import { inputClass, labelClass, pageClass, primaryButtonClass, surfaceClass } from "./styles";
 import { useFamily } from "../store/FamilyProvider";
 
 export function DirectoryPage() {
@@ -45,15 +45,15 @@ export function DirectoryPage() {
     results.length === members.length ? `${members.length} people` : `${results.length} of ${members.length} people`;
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      <header className="flex flex-col gap-6 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <main className={pageClass}>
+      <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue">Kinfolk</p>
-          <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">{group.name}</h1>
-          <p className="mt-2 max-w-xl text-ink-soft">{group.description}</p>
-          <p className="mt-2 text-sm text-ink-soft">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">Kinfolk</p>
+          <h1 className="mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">{group.name}</h1>
+          <p className="mt-3 max-w-xl text-stone-500">{group.description}</p>
+          <p className="mt-3 text-sm text-stone-500">
             {currentUser.displayName} · {currentUser.role === "owner" ? "Owner" : "Editor"} · Invite{" "}
-            <code className="rounded bg-paper-2 px-1.5 py-0.5 text-ink">{group.inviteCode}</code>
+            <code className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">{group.inviteCode}</code>
           </p>
         </div>
         <Link to={withSearch("/members/new", listSearch)} className={primaryButtonClass}>
@@ -62,7 +62,7 @@ export function DirectoryPage() {
         </Link>
       </header>
 
-      <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-end">
+      <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-end">
         <div className="min-w-0 flex-1">
           <label htmlFor="member-search" className={labelClass}>
             Search
@@ -97,7 +97,7 @@ export function DirectoryPage() {
             ))}
           </select>
         </div>
-        <div role="group" aria-label="Directory layout" className="inline-flex rounded-full border border-line bg-paper-2 p-1">
+        <div role="group" aria-label="Directory layout" className="inline-flex rounded-full border border-stone-200/60 bg-white p-1 shadow-warm">
           <ViewButton pressed={view === "cards"} onClick={() => assignParam("view", "")}>
             <LayoutGrid size={16} aria-hidden />
             Cards
@@ -109,13 +109,13 @@ export function DirectoryPage() {
         </div>
       </div>
 
-      <p className="mt-4 text-sm text-ink-soft" aria-live="polite">
+      <p className="mt-6 text-sm text-stone-500" aria-live="polite">
         {countLabel}
       </p>
 
       {results.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-line bg-paper-2 px-5 py-12 text-center">
-          <p className="font-display text-2xl font-bold">
+        <div className={`${surfaceClass} mt-6 px-6 py-16 text-center`}>
+          <p className="font-display text-2xl font-bold tracking-tight">
             {members.length === 0 ? "No one is in this household yet." : emptyFilterMessage(query, relationship)}
           </p>
           {members.length > 0 ? (
@@ -125,11 +125,11 @@ export function DirectoryPage() {
           ) : null}
         </div>
       ) : view === "table" ? (
-        <div className="mt-4">
+        <div className="mt-6">
           <MemberTable members={results} hrefFor={(id) => withSearch(`/members/${encodeURIComponent(id)}`, listSearch)} />
         </div>
       ) : (
-        <ul className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {results.map((member) => (
             <li key={member.id}>
               <MemberCard member={member} to={withSearch(`/members/${encodeURIComponent(member.id)}`, listSearch)} />
@@ -138,13 +138,13 @@ export function DirectoryPage() {
         </ul>
       )}
 
-      <footer className="mt-10 flex flex-col gap-3 border-t border-line pt-6 text-sm text-ink-soft sm:flex-row sm:items-center sm:justify-between">
+      <footer className="mt-12 flex flex-col gap-3 border-t border-stone-200/60 pt-6 text-sm text-stone-500 sm:flex-row sm:items-center sm:justify-between">
         <p>Changes stay in this browser tab. Reloading restores the sample household.</p>
         {armReset ? (
           <span className="flex flex-wrap gap-3">
             <button
               type="button"
-              className="font-semibold text-ink"
+              className="font-semibold text-stone-850"
               onClick={() => {
                 reset();
                 setArmReset(false);
@@ -152,12 +152,12 @@ export function DirectoryPage() {
             >
               Restore sample household
             </button>
-            <button type="button" className="font-semibold text-ink-soft" onClick={() => setArmReset(false)}>
+            <button type="button" className="font-semibold text-stone-500" onClick={() => setArmReset(false)}>
               Cancel
             </button>
           </span>
         ) : (
-          <button type="button" className="self-start font-semibold text-ink" onClick={() => setArmReset(true)}>
+          <button type="button" className="self-start font-semibold text-stone-850" onClick={() => setArmReset(true)}>
             Reset sample data
           </button>
         )}
@@ -173,8 +173,8 @@ function ViewButton({ pressed, onClick, children }: { pressed: boolean; onClick:
       type="button"
       aria-pressed={pressed}
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold ${
-        pressed ? "bg-blue text-white" : "text-ink-soft hover:text-ink"
+      className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition-all duration-200 ease-out ${
+        pressed ? "bg-terracotta text-white shadow-warm" : "text-stone-500 hover:text-stone-850"
       }`}
     >
       {children}

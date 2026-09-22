@@ -5,7 +5,7 @@ import { birthdayCalendar } from "../lib/calendar";
 import { birthdayTiming, parseBirthdayWindow, upcomingBirthdays } from "../lib/birthdays";
 import { formatLongDate, formatToday } from "../lib/dates";
 import { downloadFile, fileSlug } from "../lib/download";
-import { secondaryButtonClass } from "../directory/styles";
+import { pageClass, secondaryButtonClass, surfaceClass } from "../directory/styles";
 import { useFamily } from "../store/FamilyProvider";
 import type { BirthdayWindow } from "../types";
 
@@ -38,21 +38,21 @@ export function BirthdaysPage() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      <header className="flex flex-col gap-6 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <main className={pageClass}>
+      <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue">{group.name}</p>
-          <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">Birthdays</h1>
-          <p className="mt-2 max-w-xl text-ink-soft">Upcoming dates as of {formatToday()}, with the age each person is turning.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">{group.name}</p>
+          <h1 className="mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">Birthdays</h1>
+          <p className="mt-3 max-w-xl text-stone-500">Upcoming dates as of {formatToday()}, with the age each person is turning.</p>
         </div>
         <button type="button" className={secondaryButtonClass} onClick={downloadCalendar}>
           <Download size={16} aria-hidden />
           Download calendar
         </button>
       </header>
-      <p className="mt-4 text-sm text-ink-soft">The .ics file repeats every year, so it can be imported into Google Calendar or Apple Calendar.</p>
+      <p className="mt-6 text-sm text-stone-500">The .ics file repeats every year, so it can be imported into Google Calendar or Apple Calendar.</p>
 
-      <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Birthday window">
+      <div className="mt-8 flex flex-wrap gap-3" role="group" aria-label="Birthday window">
         {windows.map((window) => {
           const count = upcomingBirthdays(members, window).length;
           const selected = window === within;
@@ -62,38 +62,40 @@ export function BirthdaysPage() {
               type="button"
               aria-pressed={selected}
               onClick={() => chooseWindow(window)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                selected ? "bg-blue text-white" : "border border-line bg-paper-2 text-ink hover:border-blue"
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out ${
+                selected ? "bg-terracotta text-white shadow-warm" : "border border-stone-200/60 bg-white text-stone-850 shadow-warm hover:-translate-y-0.5 hover:shadow-md"
               }`}
             >
               Next {window} days
-              <span className={selected ? "opacity-80" : "text-ink-soft"}> · {count}</span>
+              <span className={selected ? "opacity-80" : "text-stone-500"}> · {count}</span>
             </button>
           );
         })}
       </div>
 
       {upcoming.length === 0 ? (
-        <p className="mt-6 rounded-2xl border border-dashed border-line bg-paper-2 px-5 py-12 text-center font-display text-2xl font-bold">
+        <p className={`${surfaceClass} mt-8 px-6 py-16 text-center font-display text-2xl font-bold tracking-tight`}>
           No birthdays in the next {within} days.
         </p>
       ) : (
-        <ol className="mt-6 grid gap-3">
+        <ol className="mt-8 grid gap-6">
           {upcoming.map((item) => {
             const soon = item.daysUntil <= 7;
             return (
               <li key={item.memberId}>
                 <Link
                   to={`/members/${encodeURIComponent(item.memberId)}`}
-                  className="flex flex-col gap-2 rounded-2xl border border-line bg-paper-2 px-5 py-4 text-ink no-underline hover:border-blue sm:flex-row sm:items-center sm:justify-between"
+                  className={`flex flex-col gap-3 rounded-3xl border px-6 py-6 text-stone-850 no-underline shadow-warm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between sm:px-8 ${
+                    soon ? "border-amber-200/80 bg-gradient-to-r from-amber-500/10 to-orange-500/10" : "border-stone-200/60 bg-white"
+                  }`}
                 >
                   <span>
-                    <span className="block font-display text-2xl font-bold">{item.fullName}</span>
-                    <span className="mt-1 block text-sm text-ink-soft">
+                    <span className="block font-display text-2xl font-bold tracking-tight">{item.fullName}</span>
+                    <span className="mt-1 block text-sm text-stone-500">
                       {item.relationship || "Family"} · Turns {item.turningAge}
                     </span>
                   </span>
-                  <span className={`text-sm font-semibold ${soon ? "text-blue" : "text-ink-soft"}`}>
+                  <span className={`text-sm font-semibold ${soon ? "text-honey" : "text-stone-500"}`}>
                     {formatLongDate(item.nextOccurrence)} · {birthdayTiming(item.daysUntil)}
                   </span>
                 </Link>
@@ -104,12 +106,12 @@ export function BirthdaysPage() {
       )}
 
       {undated.length > 0 ? (
-        <p className="mt-8 text-sm text-ink-soft">
+        <p className="mt-10 text-sm text-stone-500">
           No birthday on file:{" "}
           {undated.map((member, index) => (
             <span key={member.id}>
               {index > 0 ? ", " : null}
-              <Link className="font-semibold text-ink underline decoration-line underline-offset-2" to={`/members/${encodeURIComponent(member.id)}`}>
+              <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(member.id)}`}>
                 {member.fullName}
               </Link>
             </span>

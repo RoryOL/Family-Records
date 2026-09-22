@@ -9,14 +9,14 @@ export function BirthdayBanner({ onDismiss }: { onDismiss: () => void }) {
   if (soon.length === 0) return null;
 
   return (
-    <aside className="border-b border-line bg-blue-soft" aria-label="Birthday reminders">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+    <aside className="border-b border-amber-200/70 bg-gradient-to-r from-amber-500/10 to-orange-500/10" aria-label="Birthday reminders">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue">Birthdays this week</p>
-          <ul className="mt-1 space-y-1 text-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-800">Birthdays this week</p>
+          <ul className="mt-2 space-y-1 text-sm">
             {soon.map((item) => (
               <li key={item.memberId}>
-                <Link className="font-semibold text-ink underline decoration-line underline-offset-2" to={`/members/${encodeURIComponent(item.memberId)}`}>
+                <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(item.memberId)}`}>
                   {item.fullName}
                 </Link>{" "}
                 turns {item.turningAge} {birthdayTiming(item.daysUntil)}.
@@ -24,7 +24,7 @@ export function BirthdayBanner({ onDismiss }: { onDismiss: () => void }) {
             ))}
           </ul>
         </div>
-        <button type="button" className="self-start text-sm font-semibold text-ink" onClick={onDismiss}>
+        <button type="button" className="self-start rounded-full px-3 py-1.5 text-sm font-semibold text-stone-850 transition-all duration-200 ease-out hover:bg-white/70" onClick={onDismiss}>
           Dismiss
         </button>
       </div>

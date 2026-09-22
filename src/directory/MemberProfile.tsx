@@ -31,7 +31,7 @@ export function MemberProfile({ member, people }: { member: Member; people: read
           <dt className={labelClass}>Phone</dt>
           <dd className="mt-1 text-sm">
             {member.phone ? (
-              <a className="underline decoration-line underline-offset-2" href={`tel:${member.phone.replace(/[^\d+]/g, "")}`}>
+              <a className="underline decoration-amber-300 underline-offset-2" href={`tel:${member.phone.replace(/[^\d+]/g, "")}`}>
                 {member.phone}
               </a>
             ) : (
@@ -43,7 +43,7 @@ export function MemberProfile({ member, people }: { member: Member; people: read
           <dt className={labelClass}>Email</dt>
           <dd className="mt-1 break-words text-sm">
             {member.email ? (
-              <a className="underline decoration-line underline-offset-2" href={`mailto:${member.email}`}>
+              <a className="underline decoration-amber-300 underline-offset-2" href={`mailto:${member.email}`}>
                 {member.email}
               </a>
             ) : (
@@ -56,7 +56,7 @@ export function MemberProfile({ member, people }: { member: Member; people: read
         <dt className={labelClass}>Postal address</dt>
         <dd className="mt-1 text-sm">
           <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badgeClass(badge.tone)}`}>{badge.label}</span>
-          {address ? <p className="mt-2 whitespace-pre-line leading-6">{address}</p> : <p className="mt-2 text-ink-soft">No postal address</p>}
+          {address ? <p className="mt-2 whitespace-pre-line leading-6">{address}</p> : <p className="mt-2 text-stone-500">No postal address</p>}
         </dd>
       </div>
       <div>

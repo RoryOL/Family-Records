@@ -43,7 +43,7 @@ export function addressBadge(address: Address | null): AddressBadge {
 }
 
 export function badgeClass(tone: AddressBadge["tone"]): string {
-  if (tone === "sage") return "bg-blue text-white";
-  if (tone === "gold") return "bg-blue-soft text-blue";
-  return "bg-paper text-ink-soft";
+  if (tone === "sage") return "bg-sage-soft text-sage";
+  if (tone === "gold") return "bg-amber-100 text-amber-800";
+  return "bg-stone-100 text-stone-500";
 }

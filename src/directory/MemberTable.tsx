@@ -7,27 +7,27 @@ export function MemberTable({ members, hrefFor }: { members: readonly Member[]; 
   const navigate = useNavigate();
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-line bg-paper-2">
+    <div className="overflow-x-auto rounded-3xl border border-stone-200/60 bg-white shadow-warm">
       <table className="w-full min-w-[760px] border-collapse text-left text-sm">
         <caption className="sr-only">Family members</caption>
-        <thead className="border-b border-line text-xs uppercase tracking-[0.14em] text-ink-soft">
+        <thead className="border-b border-stone-200/60 text-xs uppercase tracking-[0.14em] text-stone-500">
           <tr>
-            <th scope="col" className="px-4 py-3 font-semibold">
+            <th scope="col" className="px-5 py-4 font-semibold">
               Name
             </th>
-            <th scope="col" className="px-4 py-3 font-semibold">
+            <th scope="col" className="px-5 py-4 font-semibold">
               Relationship
             </th>
-            <th scope="col" className="px-4 py-3 font-semibold">
+            <th scope="col" className="px-5 py-4 font-semibold">
               Birthday
             </th>
-            <th scope="col" className="px-4 py-3 font-semibold">
+            <th scope="col" className="px-5 py-4 font-semibold">
               Phone
             </th>
-            <th scope="col" className="px-4 py-3 font-semibold">
+            <th scope="col" className="px-5 py-4 font-semibold">
               Email
             </th>
-            <th scope="col" className="px-4 py-3 font-semibold">
+            <th scope="col" className="px-5 py-4 font-semibold">
               Address
             </th>
           </tr>
@@ -40,24 +40,24 @@ export function MemberTable({ members, hrefFor }: { members: readonly Member[]; 
             return (
               <tr
                 key={member.id}
-                className="cursor-pointer border-b border-line last:border-b-0 hover:bg-paper"
+                className="cursor-pointer border-b border-stone-100 last:border-b-0 hover:bg-amber-50/40"
                 onClick={() => navigate(href)}
               >
-                <th scope="row" className="px-4 py-3 font-display text-base font-bold">
+                <th scope="row" className="px-5 py-4 font-display text-base font-bold tracking-tight">
                   <Link to={href} className="underline-offset-2 hover:underline" onClick={(event) => event.stopPropagation()}>
                     {member.fullName}
                   </Link>
                 </th>
-                <td className="px-4 py-3">{member.relationship || "—"}</td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-4">{member.relationship || "—"}</td>
+                <td className="px-5 py-4">
                   <div>{member.dateOfBirth ? formatLongDate(member.dateOfBirth) : "—"}</div>
-                  {next ? <div className="text-ink-soft">{next}</div> : null}
+                  {next ? <div className="text-stone-500">{next}</div> : null}
                 </td>
-                <td className="px-4 py-3">{member.phone ?? "—"}</td>
-                <td className="max-w-48 break-words px-4 py-3">{member.email ?? "—"}</td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-4">{member.phone ?? "—"}</td>
+                <td className="max-w-48 break-words px-5 py-4">{member.email ?? "—"}</td>
+                <td className="px-5 py-4">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badgeClass(badge.tone)}`}>{badge.label}</span>
-                  {badge.place ? <div className="mt-1 text-ink-soft">{badge.place}</div> : null}
+                  {badge.place ? <div className="mt-1 text-stone-500">{badge.place}</div> : null}
                 </td>
               </tr>
             );

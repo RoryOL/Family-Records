@@ -1,31 +1,39 @@
 @import "tailwindcss";
+@config "../tailwind.config.js";
 
 @theme {
   --font-sans: "Nunito", "Segoe UI", sans-serif;
   --font-display: "Quicksand", "Nunito", sans-serif;
-  --color-paper: #f4f8fc;
-  --color-paper-2: #ffffff;
-  --color-ink: #16324f;
-  --color-ink-soft: #5b728a;
-  --color-line: #d5e3f2;
-  --color-blue: #1b6fe8;
-  --color-blue-deep: #1457b8;
-  --color-blue-soft: #e7f1fc;
+  --color-stone-850: #2c2622;
+  --color-terracotta: #f97316;
+  --color-terracotta-deep: #ea580c;
+  --color-honey: #f59e0b;
+  --color-sage: #059669;
+  --color-sage-soft: #d1fae5;
+  --shadow-warm: 0 4px 20px -2px rgba(120, 53, 15, 0.05);
 }
 
 html {
-  background: var(--color-paper);
+  background: #fafaf9;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  color: var(--color-ink);
+  color: var(--color-stone-850);
   font-family: var(--font-sans);
   font-weight: 400;
   background:
-    radial-gradient(900px 420px at 0% -10%, #d7e8fb 0%, transparent 60%),
-    var(--color-paper);
+    radial-gradient(980px 460px at 0% -8%, rgb(255 247 237 / 0.95) 0%, transparent 58%),
+    radial-gradient(720px 380px at 100% 0%, rgb(254 243 199 / 0.7) 0%, transparent 52%),
+    #fafaf9;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
 button {
@@ -37,12 +45,12 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--color-blue);
+  outline: 2px solid var(--color-terracotta);
   outline-offset: 3px;
 }
 
 ::placeholder {
-  color: var(--color-ink-soft);
+  color: #78716c;
 }
 
 dialog.kinfolk-drawer {
@@ -66,5 +74,5 @@ dialog.kinfolk-drawer[open] {
 }
 
 dialog.kinfolk-drawer::backdrop {
-  background: rgb(20 40 68 / 0.45);
+  background: rgb(68 42 24 / 0.4);
 }
