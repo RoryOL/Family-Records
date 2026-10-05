@@ -1,0 +1,12 @@
+{
+  "appId": "app.familyrecords.directory",
+  "appName": "Family Records",
+  "webDir": "dist",
+  "backgroundColor": "#fafaf9",
+  "android": {
+    "backgroundColor": "#fafaf9"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

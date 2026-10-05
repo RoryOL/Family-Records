@@ -20,7 +20,21 @@ In the Supabase SQL editor, run `supabase/migrations/20260922120000_family_recor
 
 The production build is an installable app. On Chrome or Edge, open Family Records and choose **Install app**. On iPhone or iPad, open the Share menu and choose **Add to Home Screen**.
 
-`http://localhost:5173` can be installed on the computer running the dev server. A phone adds the app from a public HTTPS address. The service worker is registered in the production build, so install from `npm run build` and `npm run preview`, or from the deployed site.
+`http://localhost:5173` can be installed on the computer running the dev server. A phone adds the browser app from a public HTTPS address. The service worker is registered in the production build, so install from `npm run build` and `npm run preview`, or from the deployed site.
+
+## Android
+
+The phone app is an APK. After it is installed, Family Records opens on the phone and stores the household in Supabase. The computer is only used to build the package.
+
+Install a JDK and the Android SDK, with `ANDROID_HOME` pointing at the SDK. Then:
+
+```bash
+npm run android:apk
+```
+
+The debug package is `android/app/build/outputs/apk/debug/app-debug.apk`. Copy it to the phone and open it to install. Android will ask you to allow installation from that source.
+
+Under Supabase → Authentication → URL configuration, add `familyrecords://auth-callback` to the redirect allow list. Confirmation links then open the installed app. Sign-in for an account that is already confirmed works as soon as the APK is installed.
 
 ## Layout
 
@@ -36,6 +50,7 @@ src/
   import/                        Spreadsheet drop, column mapping, and review
   shell/                         Navigation and the 7-day reminder banner
   pwa/                           Install prompt and the iOS home-screen hint
+  native/                        Android shell, status bar, and confirmation links
   lib/                           Dates, birthdays, calendar, addresses, and member helpers
   store/FamilyProvider.tsx       FamilyProvider and useFamily()
 supabase/migrations/             Household tables, invite functions, and row level security

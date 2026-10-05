@@ -1,4 +1,5 @@
 import type { Session, User } from "@supabase/supabase-js";
+import { nativeSignUpRedirect } from "../native/authLink";
 import type { FamilyState, Member } from "../types";
 import { getSupabase } from "./client";
 import { friendlySupabaseMessage } from "./messages";
@@ -26,10 +27,14 @@ export async function signIn(email: string, password: string): Promise<void> {
 }
 
 export async function signUp(displayName: string, email: string, password: string): Promise<SignUpResult> {
+  const emailRedirectTo = nativeSignUpRedirect();
   const { data, error } = await getSupabase().auth.signUp({
     email: email.trim(),
     password,
-    options: { data: { display_name: displayName.trim() } },
+    options: {
+      data: { display_name: displayName.trim() },
+      ...(emailRedirectTo ? { emailRedirectTo } : {}),
+    },
   });
   if (error) throw supabaseFailure(error);
   if (data.user && (data.user.identities?.length ?? 0) === 0) return "exists";

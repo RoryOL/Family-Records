@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { useEffect, useState } from "react";
 import { primaryButtonClass } from "../directory/styles";
 import { shouldOfferIosHomeScreen } from "./homeScreen";
@@ -20,7 +21,7 @@ export function InstallApp() {
   const [hidden, setHidden] = useState(true);
 
   useEffect(() => {
-    if (alreadyInstalled() || localStorage.getItem(HIDDEN_KEY) === "1") return;
+    if (Capacitor.isNativePlatform() || alreadyInstalled() || localStorage.getItem(HIDDEN_KEY) === "1") return;
     setHidden(false);
     setIosHint(shouldOfferIosHomeScreen(navigator.userAgent, navigator.maxTouchPoints));
     const onPrompt = (event: Event) => {
@@ -31,7 +32,7 @@ export function InstallApp() {
     return () => window.removeEventListener("beforeinstallprompt", onPrompt);
   }, []);
 
-  if (hidden || (!prompt && !iosHint)) return null;
+  if (Capacitor.isNativePlatform() || hidden || (!prompt && !iosHint)) return null;
 
   function dismiss() {
     localStorage.setItem(HIDDEN_KEY, "1");
