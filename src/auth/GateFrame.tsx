@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { pageClass } from "../directory/styles";
+import { InstallKinfolk } from "../pwa/InstallKinfolk";
 
 export function GateFrame({ title, lede, children }: { title: string; lede: string; children?: ReactNode }) {
   useEffect(() => {
@@ -7,8 +8,9 @@ export function GateFrame({ title, lede, children }: { title: string; lede: stri
   }, [title]);
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-850">
+    <div className="min-h-dvh bg-stone-50 text-stone-850">
       <div className="h-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-terracotta" />
+      <InstallKinfolk />
       <main className={pageClass}>
         <header className="max-w-xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">Kinfolk</p>

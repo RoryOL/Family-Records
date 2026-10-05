@@ -117,7 +117,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
       onCancel={onCancel}
       onMouseDown={onBackdrop}
     >
-      <div className="flex h-full w-full flex-col bg-white shadow-warm sm:w-[36rem] sm:border-l sm:border-stone-200/60">
+      <div className="flex h-full w-full flex-col bg-white pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] shadow-warm sm:w-[36rem] sm:border-l sm:border-stone-200/60 sm:pl-0">
         <header className="flex items-start justify-between gap-4 border-b border-stone-200/60 px-6 py-6 sm:px-8">
           <div>
             <h2 id="member-drawer-title" ref={titleRef} tabIndex={-1} className="font-display text-3xl font-bold tracking-tight outline-none">

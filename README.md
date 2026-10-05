@@ -14,7 +14,13 @@ Fill `.env` with the project URL and the anon key from Supabase → Project Sett
 
 In the Supabase SQL editor, run `supabase/migrations/20260922120000_kinfolk_household.sql`. Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
 
-`npm test` checks the store, directory filters, the member form, birthday windows, calendar export, mailing labels, spreadsheet import, and the Supabase row mapping. `npm run build` typechecks and builds the Vite app.
+`npm test` checks the store, directory filters, the member form, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, and the home-screen hint. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
+
+## Install
+
+The production build is an installable app. On Chrome or Edge, open Kinfolk and choose **Install app**. On iPhone or iPad, open the Share menu and choose **Add to Home Screen**.
+
+`http://localhost:5173` can be installed on the computer running the dev server. A phone adds the app from a public HTTPS address. The service worker is registered in the production build, so install from `npm run build` and `npm run preview`, or from the deployed site.
 
 ## Layout
 
@@ -29,6 +35,7 @@ src/
   cards/                         Greeting-card addresses, copy, and CSV export
   import/                        Spreadsheet drop, column mapping, and review
   shell/                         Navigation and the 7-day reminder banner
+  pwa/                           Install prompt and the iOS home-screen hint
   lib/                           Dates, birthdays, calendar, addresses, and member helpers
   store/FamilyProvider.tsx       FamilyProvider and useFamily()
 supabase/migrations/             Household tables, invite functions, and row level security

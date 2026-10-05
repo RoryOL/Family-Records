@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
+import { InstallKinfolk } from "../pwa/InstallKinfolk";
 import { useFamily } from "../store/FamilyProvider";
 import { BirthdayBanner } from "./BirthdayBanner";
 
@@ -9,8 +10,9 @@ export function AppShell() {
   const [remindersDismissed, setRemindersDismissed] = useState(false);
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-850">
+    <div className="min-h-dvh bg-stone-50 text-stone-850">
       <div className="h-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-terracotta" />
+      <InstallKinfolk />
       <header className="border-b border-stone-200/60 bg-white/80 shadow-warm backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <Link to="/" className="font-display text-2xl font-bold tracking-tight text-stone-850 no-underline">
