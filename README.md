@@ -24,15 +24,22 @@ The production build is an installable app. On Chrome or Edge, open Family Recor
 
 ## Android
 
-The phone app is an APK. After it is installed, Family Records opens on the phone and stores the household in Supabase. The computer is only used to build the package.
+The phone app is an APK. After it is installed, Family Records opens on the phone and stores the household in Supabase.
 
-Install a JDK and the Android SDK, with `ANDROID_HOME` pointing at the SDK. Then:
+GitHub builds the package. Under the repository’s Settings → Secrets and variables → Actions, add:
+
+- `VITE_SUPABASE_URL`, the project URL from Supabase → Project Settings → API
+- `VITE_SUPABASE_ANON_KEY`, the anon key from that same page
+
+Open Actions → Android APK and download `family-records.apk` from the run. On a pull request, the same file is attached to the Android APK check. Copy it to the phone and open it to install. Android will ask you to allow installation from that source.
+
+A build on a machine with a JDK, the Android SDK, and `ANDROID_HOME` uses:
 
 ```bash
 npm run android:apk
 ```
 
-The debug package is `android/app/build/outputs/apk/debug/app-debug.apk`. Copy it to the phone and open it to install. Android will ask you to allow installation from that source.
+That package is `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 Under Supabase → Authentication → URL configuration, add `familyrecords://auth-callback` to the redirect allow list. Confirmation links then open the installed app. Sign-in for an account that is already confirmed works as soon as the APK is installed.
 
