@@ -12,8 +12,8 @@ export default defineConfig({
       injectRegister: null,
       includeAssets: ["favicon.svg", "apple-touch-icon.png"],
       manifest: {
-        name: "Kinfolk",
-        short_name: "Kinfolk",
+        name: "Family Records",
+        short_name: "Family Records",
         description: "A family directory for people, birthdays, and mailing addresses.",
         start_url: "/",
         scope: "/",

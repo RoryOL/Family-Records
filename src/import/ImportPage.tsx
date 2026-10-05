@@ -18,7 +18,7 @@ export function ImportPage() {
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
-    document.title = `Import · ${group.name} · Kinfolk`;
+    document.title = `Import · ${group.name} · Family Records`;
   }, [group.name]);
 
   const plans = useMemo(() => {
@@ -145,7 +145,7 @@ export function ImportPage() {
           <>
             <section className="min-w-0">
               <h2 className="font-display text-2xl font-bold tracking-tight">Columns</h2>
-              <p className="mt-2 text-sm text-stone-500">Kinfolk guesses from the header. Change any column that landed in the wrong place.</p>
+              <p className="mt-2 text-sm text-stone-500">Family Records guesses from the header. Change any column that landed in the wrong place.</p>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 {table.headers.map((header, index) => (
                   <label key={`${header}-${index}`} className={`${surfaceClass} block p-4`}>

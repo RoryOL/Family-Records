@@ -24,7 +24,7 @@ export function DirectoryPage() {
   const listSearch = withoutEdit(searchParams);
 
   useEffect(() => {
-    document.title = `${group.name} · Kinfolk`;
+    document.title = `${group.name} · Family Records`;
   }, [group.name]);
 
   function assignParam(key: string, value: string) {
@@ -49,7 +49,7 @@ export function DirectoryPage() {
     <main className={pageClass}>
       <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">Kinfolk</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">Family Records</p>
           <h1 className="mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">{group.name}</h1>
           <p className="mt-3 max-w-xl text-stone-500">{group.description}</p>
           <p className="mt-3 text-sm text-stone-500">

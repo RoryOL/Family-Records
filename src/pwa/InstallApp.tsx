@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { primaryButtonClass } from "../directory/styles";
 import { shouldOfferIosHomeScreen } from "./homeScreen";
 
-const HIDDEN_KEY = "kinfolk-hide-install";
+const HIDDEN_KEY = "family-records-hide-install";
 
 interface InstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -14,7 +14,7 @@ function alreadyInstalled(): boolean {
   return iosStandalone || window.matchMedia("(display-mode: standalone)").matches;
 }
 
-export function InstallKinfolk() {
+export function InstallApp() {
   const [prompt, setPrompt] = useState<InstallPromptEvent | null>(null);
   const [iosHint, setIosHint] = useState(false);
   const [hidden, setHidden] = useState(true);
@@ -50,7 +50,7 @@ export function InstallKinfolk() {
     <div className="border-b border-amber-100 bg-amber-50">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <p className="text-sm text-stone-850">
-          {prompt ? "Install Kinfolk so it opens like an app." : "Add Kinfolk from the Share menu, then choose Add to Home Screen."}
+          {prompt ? "Install Family Records so it opens like an app." : "Add Family Records from the Share menu, then choose Add to Home Screen."}
         </p>
         <div className="flex flex-wrap gap-2">
           {prompt ? (

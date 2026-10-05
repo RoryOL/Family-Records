@@ -1,5 +1,5 @@
 /**
- * Kinfolk domain contract.
+ * Family Records domain contract.
  * The in-memory store (Step 1) and the later Supabase schema share these shapes.
  */
 

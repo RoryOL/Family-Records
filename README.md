@@ -1,4 +1,4 @@
-# Kinfolk
+# Family Records
 
 A family directory for people, birthdays, and mailing addresses. Accounts, households, and profiles are stored in Supabase. Members of a household can read and update the directory. Someone with the invite code can join as an editor.
 
@@ -12,13 +12,13 @@ npm run dev
 
 Fill `.env` with the project URL and the anon key from Supabase → Project Settings → API. Leave the service role key out of the app.
 
-In the Supabase SQL editor, run `supabase/migrations/20260922120000_kinfolk_household.sql`. Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
+In the Supabase SQL editor, run `supabase/migrations/20260922120000_family_records_household.sql`. Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
 
 `npm test` checks the store, directory filters, the member form, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, and the home-screen hint. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
 
 ## Install
 
-The production build is an installable app. On Chrome or Edge, open Kinfolk and choose **Install app**. On iPhone or iPad, open the Share menu and choose **Add to Home Screen**.
+The production build is an installable app. On Chrome or Edge, open Family Records and choose **Install app**. On iPhone or iPad, open the Share menu and choose **Add to Home Screen**.
 
 `http://localhost:5173` can be installed on the computer running the dev server. A phone adds the app from a public HTTPS address. The service worker is registered in the production build, so install from `npm run build` and `npm run preview`, or from the deployed site.
 

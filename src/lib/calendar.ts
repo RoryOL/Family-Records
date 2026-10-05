@@ -20,7 +20,7 @@ export function birthdayCalendar(members: readonly Member[], calendarName: strin
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Kinfolk//Family birthdays//EN",
+    "PRODID:-//Family Records//Family birthdays//EN",
     "CALSCALE:GREGORIAN",
     `X-WR-CALNAME:${icsEscape(calendarName)}`,
   ];
@@ -31,7 +31,7 @@ export function birthdayCalendar(members: readonly Member[], calendarName: strin
     const relationship = member.relationship.trim() || "family";
     lines.push(
       "BEGIN:VEVENT",
-      `UID:${icsEscape(member.id)}@kinfolk`,
+      `UID:${icsEscape(member.id)}@familyrecords`,
       `DTSTAMP:${formatUtcStamp(now)}`,
       `DTSTART;VALUE=DATE:${member.dateOfBirth.replaceAll("-", "")}`,
       "RRULE:FREQ=YEARLY",

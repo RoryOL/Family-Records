@@ -112,7 +112,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
   return (
     <dialog
       ref={dialogRef}
-      className="kinfolk-drawer"
+      className="member-drawer"
       aria-labelledby="member-drawer-title"
       onCancel={onCancel}
       onMouseDown={onBackdrop}

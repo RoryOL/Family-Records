@@ -1,4 +1,4 @@
--- Kinfolk household: one family group per account, shared directory, invite to join.
+-- Family Records household: one family group per account, shared directory, invite to join.
 -- Authenticated members can read and update people. The anon key cannot.
 
 create table public.family_groups (

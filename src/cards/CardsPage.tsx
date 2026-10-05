@@ -18,7 +18,7 @@ export function CardsPage() {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
 
   useEffect(() => {
-    document.title = `Greeting cards · ${group.name} · Kinfolk`;
+    document.title = `Greeting cards · ${group.name} · Family Records`;
   }, [group.name]);
 
   useEffect(() => {

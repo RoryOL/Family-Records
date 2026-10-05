@@ -184,10 +184,10 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   }
 
   if (phase === "unconfigured") return <SetupPage />;
-  if (phase === "loading") return <GateFrame title="Kinfolk" lede="Opening your household…" />;
+  if (phase === "loading") return <GateFrame title="Family Records" lede="Opening your household…" />;
   if (phase === "error") {
     return (
-      <GateFrame title="Kinfolk" lede={gateError ?? "The household could not be opened."}>
+      <GateFrame title="Family Records" lede={gateError ?? "The household could not be opened."}>
         <button type="button" className={`${primaryButtonClass} mt-8`} onClick={() => setAttempt((current) => current + 1)}>
           Try again
         </button>
@@ -214,7 +214,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
       />
     );
   }
-  if (!value) return <GateFrame title="Kinfolk" lede="Opening your household…" />;
+  if (!value) return <GateFrame title="Family Records" lede="Opening your household…" />;
 
   return <FamilyContext.Provider value={value}>{children}</FamilyContext.Provider>;
 }

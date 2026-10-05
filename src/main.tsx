@@ -13,7 +13,7 @@ if (import.meta.env.PROD) {
 
 const root = document.getElementById("root");
 if (!root) {
-  throw new Error("Kinfolk could not find the root element.");
+  throw new Error("Family Records could not find the root element.");
 }
 
 createRoot(root).render(

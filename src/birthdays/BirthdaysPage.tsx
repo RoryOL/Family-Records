@@ -19,7 +19,7 @@ export function BirthdaysPage() {
   const undated = members.filter((member) => !member.dateOfBirth).sort((a, b) => a.fullName.localeCompare(b.fullName));
 
   useEffect(() => {
-    document.title = `Birthdays · ${group.name} · Kinfolk`;
+    document.title = `Birthdays · ${group.name} · Family Records`;
   }, [group.name]);
 
   function chooseWindow(window: BirthdayWindow) {

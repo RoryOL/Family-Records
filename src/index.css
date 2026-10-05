@@ -57,7 +57,7 @@ textarea:focus-visible {
   color: #78716c;
 }
 
-dialog.kinfolk-drawer {
+dialog.member-drawer {
   margin: 0;
   height: 100%;
   width: 100%;
@@ -69,7 +69,7 @@ dialog.kinfolk-drawer {
   color: inherit;
 }
 
-dialog.kinfolk-drawer[open] {
+dialog.member-drawer[open] {
   position: fixed;
   inset: 0;
   display: flex;
@@ -77,6 +77,6 @@ dialog.kinfolk-drawer[open] {
   overflow: hidden;
 }
 
-dialog.kinfolk-drawer::backdrop {
+dialog.member-drawer::backdrop {
   background: rgb(68 42 24 / 0.4);
 }
