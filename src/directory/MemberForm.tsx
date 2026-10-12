@@ -12,6 +12,8 @@ import {
   type MemberFormErrors,
   type MemberFormValues,
 } from "./memberForm";
+import { lookupEircode } from "../lib/eircode";
+import { EircodeHint } from "./EircodeHint";
 import { inputClass, labelClass, secondaryButtonClass } from "./styles";
 import type { MemberDraft } from "../types";
 
@@ -39,6 +41,7 @@ export function MemberForm({
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const baseId = useId();
+  const postalHintId = `${baseId}-postal-lookup`;
   const listId = `${baseId}-relationships`;
   const firstNameRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
@@ -239,7 +242,21 @@ export function MemberForm({
               <TextField id={`${baseId}-city`} label="Town/City" autoComplete="address-level2" value={values.city} onChange={(value) => update("city", value)} />
               <TextField id={`${baseId}-region`} label="County" autoComplete="address-level1" value={values.region} onChange={(value) => update("region", value)} />
             </div>
-            <TextField id={`${baseId}-postal`} label="Eircode" autoComplete="postal-code" value={values.postalCode} onChange={(value) => update("postalCode", value)} />
+            <TextField
+              id={`${baseId}-postal`}
+              label="Eircode"
+              autoComplete="postal-code"
+              describedBy={values.postalCode.toUpperCase().replace(/[^A-Z0-9]/g, "").length >= 3 ? postalHintId : undefined}
+              value={values.postalCode}
+              onChange={(value) => update("postalCode", lookupEircode(value)?.formatted ?? value)}
+            />
+            <EircodeHint
+              id={postalHintId}
+              postalCode={values.postalCode}
+              city={values.city}
+              region={values.region}
+              onUseTown={(town, county) => setValues((current) => ({ ...current, city: town, region: county }))}
+            />
           </>
         )}
         <label className="flex items-center gap-2 text-sm">
@@ -278,6 +295,7 @@ function TextField({
   list,
   placeholder,
   required = false,
+  describedBy,
   inputRef,
 }: {
   id: string;
@@ -290,8 +308,10 @@ function TextField({
   list?: string;
   placeholder?: string;
   required?: boolean;
+  describedBy?: string;
   inputRef?: Ref<HTMLInputElement>;
 }) {
+  const description = [error ? `${id}-error` : null, describedBy].filter(Boolean).join(" ");
   return (
     <div>
       <label htmlFor={id} className={labelClass}>
@@ -309,7 +329,7 @@ function TextField({
         autoComplete={autoComplete}
         aria-required={required || undefined}
         aria-invalid={error ? true : undefined}
-        aria-describedby={error ? `${id}-error` : undefined}
+        aria-describedby={description || undefined}
         onChange={(event) => onChange(event.target.value)}
       />
       {error ? (

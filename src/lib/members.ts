@@ -1,4 +1,5 @@
 import { parseIsoDate } from "./dates";
+import { presentEircode } from "./eircode";
 import type { Address, AddressInput, Member, MemberDraft, MemberPatch } from "../types";
 
 export function createId(prefix: string): string {
@@ -40,7 +41,7 @@ export function normalizeAddress(input: AddressInput): Address {
     line3: (input.line3 ?? "").trim(),
     city: input.city.trim(),
     region: input.region.trim(),
-    postalCode: input.postalCode.trim(),
+    postalCode: format === "ie" ? presentEircode(input.postalCode) : input.postalCode.trim(),
     country,
     verified: input.verified,
   };

@@ -37,6 +37,29 @@ describe("createMember", () => {
     expect(member.address?.line1).toBe("1 King Street");
   });
 
+  it("stores a complete Irish Eircode with a space", () => {
+    const member = createMember("grp", {
+      firstName: "Aoife",
+      lastName: "Murphy",
+      relationship: "",
+      dateOfBirth: null,
+      phone: null,
+      email: null,
+      address: {
+        format: "ie",
+        line1: "1 Abbey Street",
+        line2: "",
+        city: "Dublin 2",
+        region: "Dublin",
+        postalCode: "d02x285",
+        country: "Ireland",
+        verified: false,
+      },
+      notes: "",
+    });
+    expect(member.address?.postalCode).toBe("D02 X285");
+  });
+
   it("keeps an explicit full name", () => {
     const member = createMember("grp", {
       firstName: "Mary",

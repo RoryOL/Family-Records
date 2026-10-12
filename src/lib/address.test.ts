@@ -44,6 +44,12 @@ describe("Irish addresses", () => {
     );
   });
 
+  it("prints a complete Eircode with a space", () => {
+    expect(formatPostalAddress("Aoife Murphy", { ...malahide, postalCode: "a98f4e2", city: "Bray", region: "Wicklow" })).toBe(
+      ["Aoife Murphy", "12 Main Street", "The Green", "Bray", "Wicklow", "A98 F4E2"].join("\n"),
+    );
+  });
+
   it("asks for the Irish fields that are still empty", () => {
     expect(missingAddressParts({ ...malahide, line1: "", city: "", postalCode: "" })).toEqual(["address line 1", "town", "eircode"]);
   });

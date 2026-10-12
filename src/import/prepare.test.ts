@@ -78,9 +78,59 @@ describe("previewImport", () => {
         verified: false,
       },
     });
-    expect(plans[0]?.issues.map((issue) => issue.severity)).toEqual(["warning"]);
+    expect(plans[0]?.issues.map((issue) => issue.message)).toEqual([
+      "The characters after the routing key are not a valid Eircode.",
+      "Aoife Murphy is already in this import or household.",
+    ]);
     expect(plans[1]?.draft).toBeNull();
     expect(plans[1]?.issues.map((issue) => issue.field)).toEqual(["dateOfBirth", "email"]);
+  });
+
+  it("fills a blank town and county from an Eircode", () => {
+    const [plan] = previewImport(
+      headers,
+      [{ rowNumber: 2, cells: ["Niamh", "Byrne", "", "", "1 Abbey Street", "", "", "d02x285", ""] }],
+      mappings,
+      [],
+      today,
+    );
+    expect(plan?.draft?.address).toMatchObject({
+      format: "ie",
+      city: "Dublin 2",
+      region: "Dublin",
+      postalCode: "D02 X285",
+    });
+    expect(plan?.issues.map((issue) => issue.message)).toEqual([
+      "Town and county filled from D02 X285: Dublin 2, Co. Dublin.",
+    ]);
+  });
+
+  it("fills only the county when the routing key covers several towns", () => {
+    const [plan] = previewImport(
+      headers,
+      [{ rowNumber: 2, cells: ["Cian", "Byrne", "", "", "The Harbour", "", "", "A63 F4E2", "Ireland"] }],
+      mappings,
+      [],
+      today,
+    );
+    expect(plan?.draft?.address).toMatchObject({ city: "", region: "Wicklow", postalCode: "A63 F4E2" });
+    expect(plan?.issues.map((issue) => issue.message)).toEqual([
+      "County filled from A63 F4E2: Co. Wicklow. This routing key covers more than one town.",
+    ]);
+  });
+
+  it("leaves town and county blank when the routing key crosses a county boundary", () => {
+    const [plan] = previewImport(
+      headers,
+      [{ rowNumber: 2, cells: ["Róisín", "Kelly", "", "", "Main Street", "", "", "A82 F4E2", ""] }],
+      mappings,
+      [],
+      today,
+    );
+    expect(plan?.draft?.address).toMatchObject({ city: "", region: "", postalCode: "A82 F4E2" });
+    expect(plan?.issues.map((issue) => issue.message)).toEqual([
+      "A82 F4E2 covers more than one county. Pick the town and county that match the address.",
+    ]);
   });
 });
 

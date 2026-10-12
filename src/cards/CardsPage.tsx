@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { MemberAvatar } from "../directory/MemberAvatar";
 import { pageClass, primaryButtonClass, secondaryButtonClass, surfaceClass } from "../directory/styles";
 import { formatAddressBlock, formatMailingLabels } from "../lib/address";
+import { eircodeMailingNote } from "../lib/eircode";
 import { downloadFile, fileSlug } from "../lib/download";
 import { mailingCsv, verifiedMailingMembers } from "../lib/mailingCsv";
 import { useFamily } from "../store/FamilyProvider";
@@ -76,29 +77,33 @@ export function CardsPage() {
         </p>
       ) : (
         <ul className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {ready.map((member) => (
-            <li key={member.id}>
-              <article className="h-full overflow-hidden rounded-3xl border border-stone-200/60 bg-white shadow-warm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
-                <div className="h-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10" />
-                <div className="p-6 sm:p-8">
-                <div className="flex items-center gap-4">
-                  <MemberAvatar firstName={member.firstName} lastName={member.lastName} photoUrl={member.photoUrl} />
-                  <div className="min-w-0">
-                    <h2 className="font-display text-xl font-bold tracking-tight">
-                      <Link className="text-stone-850 underline decoration-transparent underline-offset-2 hover:decoration-amber-300" to={`/members/${encodeURIComponent(member.id)}`}>
-                        {member.fullName}
-                      </Link>
-                    </h2>
-                    <p className="mt-1 text-sm text-stone-500">{member.relationship || "Family"}</p>
+          {ready.map((member) => {
+            const eircodeNote = member.address ? eircodeMailingNote(member.address) : null;
+            return (
+              <li key={member.id}>
+                <article className="h-full overflow-hidden rounded-3xl border border-stone-200/60 bg-white shadow-warm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="h-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10" />
+                  <div className="p-6 sm:p-8">
+                    <div className="flex items-center gap-4">
+                      <MemberAvatar firstName={member.firstName} lastName={member.lastName} photoUrl={member.photoUrl} />
+                      <div className="min-w-0">
+                        <h2 className="font-display text-xl font-bold tracking-tight">
+                          <Link className="text-stone-850 underline decoration-transparent underline-offset-2 hover:decoration-amber-300" to={`/members/${encodeURIComponent(member.id)}`}>
+                            {member.fullName}
+                          </Link>
+                        </h2>
+                        <p className="mt-1 text-sm text-stone-500">{member.relationship || "Family"}</p>
+                      </div>
+                    </div>
+                    <p className="mt-5 whitespace-pre-line text-sm leading-6">
+                      {member.address ? formatAddressBlock(member.address) : ""}
+                    </p>
+                    {eircodeNote ? <p className="mt-4 text-sm text-honey">{eircodeNote}</p> : null}
                   </div>
-                </div>
-                <p className="mt-5 whitespace-pre-line text-sm leading-6">
-                  {member.address ? formatAddressBlock(member.address) : ""}
-                </p>
-                </div>
-              </article>
-            </li>
-          ))}
+                </article>
+              </li>
+            );
+          })}
         </ul>
       )}
 
