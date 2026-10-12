@@ -38,11 +38,36 @@ describe("household rows", () => {
       ...insert,
       addresses: [{ ...addressToInsert(member.address, member.id), format: "ie" }],
     });
+    expect(insert.photo_path).toBeNull();
+    expect(insert).not.toHaveProperty("photoUrl");
     expect(restored).toMatchObject({
       firstName: "Aoife",
       dateOfBirth: "1990-03-15",
+      photoPath: null,
+      photoUrl: null,
       address: { format: "ie", city: "Malahide", postalCode: "K36 AB12", verified: false },
     });
+  });
+
+  it("keeps a picture path on the row and drops the signed url", () => {
+    const member = ensureMemberIds(
+      createMember("2b6d9c10-7a4e-4f1b-9c2d-3e5f7a8b9c01", {
+        firstName: "Aoife",
+        lastName: "Murphy",
+        relationship: "",
+        dateOfBirth: null,
+        phone: null,
+        email: null,
+        notes: "",
+        address: null,
+      }),
+    );
+    const pictured = { ...member, photoPath: `${member.familyGroupId}/${member.id}.jpg`, photoUrl: "https://example.test/signed" };
+    const insert = memberToInsert(pictured);
+    expect(insert.photo_path).toBe(pictured.photoPath);
+    expect(insert).not.toHaveProperty("photoUrl");
+    expect(memberFromRow({ ...insert, addresses: null }).photoPath).toBe(pictured.photoPath);
+    expect(memberFromRow({ ...insert, photo_path: "  ", addresses: null }).photoPath).toBeNull();
   });
 
   it("reads a missing address and a date-only birthday", () => {
@@ -64,6 +89,8 @@ describe("household rows", () => {
     });
     expect(member.dateOfBirth).toBe("2020-06-05");
     expect(member.address).toBeNull();
+    expect(member.photoPath).toBeNull();
+    expect(member.photoUrl).toBeNull();
   });
 
   it("maps the household and the signed-in people", () => {

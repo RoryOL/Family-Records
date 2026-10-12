@@ -12,9 +12,9 @@ npm run dev
 
 Fill `.env` with the project URL and the anon key from Supabase → Project Settings → API. Leave the service role key out of the app.
 
-In the Supabase SQL editor, run `supabase/migrations/20260922120000_family_records_household.sql`. Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
+In the Supabase SQL editor, run `supabase/migrations/20260922120000_family_records_household.sql`, then `supabase/migrations/20261012120000_member_photos.sql`. The second file adds a private picture for each person. Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
 
-`npm test` checks the store, directory filters, the member form, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, and the home-screen hint. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
+`npm test` checks the store, directory filters, the member form, pictures, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, and the home-screen hint. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
 
 ## Install
 
@@ -60,7 +60,7 @@ src/
   native/                        Android shell, status bar, and confirmation links
   lib/                           Dates, birthdays, calendar, addresses, and member helpers
   store/FamilyProvider.tsx       FamilyProvider and useFamily()
-supabase/migrations/             Household tables, invite functions, and row level security
+supabase/migrations/             Household tables, invite functions, pictures, and row level security
 ```
 
 `/` is the directory. `/birthdays` lists upcoming birthdays and downloads an `.ics` calendar. `/cards` shows verified mailing addresses, with copy and CSV export. `/import` accepts a CSV, XLS, or XLSX file, maps the columns, and adds the rows that pass the check.

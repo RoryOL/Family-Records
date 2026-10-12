@@ -42,6 +42,8 @@ export interface MemberRow {
   email: string | null;
   notes: string;
   linked_user_id: string | null;
+  /** Absent on rows loaded before the picture column existed. */
+  photo_path?: string | null;
   created_at: string;
   updated_at: string;
   addresses: AddressRow | AddressRow[] | null;
@@ -59,6 +61,7 @@ export interface MemberInsert {
   email: string | null;
   notes: string;
   linked_user_id: string | null;
+  photo_path: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -133,6 +136,8 @@ export function memberFromRow(row: MemberRow): Member {
     address: address ? addressFromRow(address) : null,
     notes: row.notes,
     linkedUserId: row.linked_user_id,
+    photoPath: row.photo_path?.trim() ? row.photo_path.trim() : null,
+    photoUrl: null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -151,6 +156,7 @@ export function memberToInsert(member: Member): MemberInsert {
     email: member.email,
     notes: member.notes,
     linked_user_id: member.linkedUserId,
+    photo_path: member.photoPath,
     created_at: member.createdAt,
     updated_at: member.updatedAt,
   };

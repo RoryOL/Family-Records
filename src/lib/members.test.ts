@@ -31,6 +31,8 @@ describe("createMember", () => {
     expect(member.email).toBeNull();
     expect(member.notes).toBe("note");
     expect(member.linkedUserId).toBeNull();
+    expect(member.photoPath).toBeNull();
+    expect(member.photoUrl).toBeNull();
     expect(member.address?.id).toMatch(/^adr_/);
     expect(member.address?.line1).toBe("1 King Street");
   });
@@ -54,10 +56,13 @@ describe("createMember", () => {
 describe("mergeMember", () => {
   it("rebuilds the full name when a given name changes", () => {
     const elena = createInitialState().members[0];
-    const updated = mergeMember(elena, { firstName: "Eleanor" }, "2026-09-21T00:00:00.000Z");
+    const pictured = { ...elena, photoPath: "grp_harpers/mem_elena.jpg", photoUrl: "https://example.test/elena.jpg" };
+    const updated = mergeMember(pictured, { firstName: "Eleanor" }, "2026-09-21T00:00:00.000Z");
     expect(updated.fullName).toBe("Eleanor Harper");
     expect(updated.id).toBe(elena.id);
     expect(updated.linkedUserId).toBe(elena.linkedUserId);
+    expect(updated.photoPath).toBe("grp_harpers/mem_elena.jpg");
+    expect(updated.photoUrl).toBe("https://example.test/elena.jpg");
   });
 
   it("leaves a custom full name in place when other fields change", () => {

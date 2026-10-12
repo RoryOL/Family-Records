@@ -52,6 +52,10 @@ export interface Member {
   notes: string;
   /** Auth user linked to this profile, when this person can sign in. */
   linkedUserId: string | null;
+  /** Object path in the private member-photos bucket, or null when this person has no picture. */
+  photoPath: string | null;
+  /** Short-lived signed URL for display. This is not written back to the database. */
+  photoUrl: string | null;
   createdAt: IsoDateTime;
   updatedAt: IsoDateTime;
 }

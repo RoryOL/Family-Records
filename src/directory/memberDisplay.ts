@@ -8,6 +8,14 @@ export interface AddressBadge {
   place: string;
 }
 
+/** One or two letters for a person who has no picture yet. */
+export function initialsFrom(firstName: string, lastName: string): string {
+  const first = Array.from(firstName.trim())[0] ?? "";
+  const last = Array.from(lastName.trim())[0] ?? "";
+  const letters = `${first}${last}`.toLocaleUpperCase();
+  return letters || "?";
+}
+
 export function nextBirthdayLabel(dateOfBirth: string | null, today = new Date()): string | null {
   if (!dateOfBirth) return null;
   const next = nextBirthday(dateOfBirth, today);

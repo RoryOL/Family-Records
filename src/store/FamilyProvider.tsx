@@ -5,15 +5,18 @@ import { GateFrame } from "../auth/GateFrame";
 import { primaryButtonClass } from "../directory/styles";
 import { HouseholdPage } from "../auth/HouseholdPage";
 import { SetupPage } from "../auth/SetupPage";
+import type { MemberPhotoSelection } from "../lib/memberPhoto";
 import { createMember, mergeMember } from "../lib/members";
 import { getSupabase, supabaseConfig } from "../supabase/client";
 import {
   createFamilyGroup,
   deleteStoredMember,
+  discardMemberPhoto,
   insertMembers,
   joinFamilyGroup,
   loadFamily,
   signOut as endSession,
+  storeMemberPhoto,
   updateStoredMember,
 } from "../supabase/familyApi";
 import { friendlySupabaseMessage } from "../supabase/messages";
@@ -27,9 +30,9 @@ export interface FamilyContextValue {
   currentUser: FamilyUser;
   members: Member[];
   getMember: (id: string) => Member | undefined;
-  addMember: (draft: MemberDraft) => Promise<Member>;
+  addMember: (draft: MemberDraft, photo?: File | null) => Promise<Member>;
   importMembers: (drafts: readonly MemberDraft[]) => Promise<Member[]>;
-  updateMember: (id: string, patch: MemberPatch) => Promise<void>;
+  updateMember: (id: string, patch: MemberPatch, photo?: MemberPhotoSelection) => Promise<void>;
   removeMember: (id: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -145,9 +148,15 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
       getMember(id) {
         return state.members.find((member) => member.id === id);
       },
-      async addMember(draft) {
-        const member = ensureMemberIds(createMember(state.group.id, draft));
-        await insertMembers([member]);
+      async addMember(draft, photo) {
+        const created = ensureMemberIds(createMember(state.group.id, draft));
+        const member = photo ? await memberWithPhoto(created, photo) : created;
+        try {
+          await insertMembers([member]);
+        } catch (error) {
+          if (member.photoPath) await discardMemberPhoto(member.photoPath).catch(() => undefined);
+          throw error;
+        }
         setState(familyReducer(state, { type: "add", member }));
         return member;
       },
@@ -157,15 +166,25 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
         setState(familyReducer(state, { type: "import", members }));
         return members;
       },
-      async updateMember(id, patch) {
+      async updateMember(id, patch, photo) {
         const existing = state.members.find((member) => member.id === id);
         if (!existing) return;
-        const member = ensureMemberIds(mergeMember(existing, patch, new Date().toISOString()));
+        let member = ensureMemberIds(mergeMember(existing, patch, new Date().toISOString()));
+        if (photo?.file) {
+          member = await memberWithPhoto(member, photo.file);
+        } else if (photo?.remove) {
+          member = { ...member, photoPath: null, photoUrl: null };
+        }
         await updateStoredMember(member);
+        if (photo?.remove && existing.photoPath && !photo.file) {
+          await discardMemberPhoto(existing.photoPath).catch(() => undefined);
+        }
         setState({ ...state, members: state.members.map((item) => (item.id === id ? member : item)) });
       },
       async removeMember(id) {
+        const existing = state.members.find((member) => member.id === id);
         await deleteStoredMember(id);
+        if (existing?.photoPath) await discardMemberPhoto(existing.photoPath).catch(() => undefined);
         setState(familyReducer(state, { type: "remove", id }));
       },
       async signOut() {
@@ -217,6 +236,11 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   if (!value) return <GateFrame title="Family Records" lede="Opening your household…" />;
 
   return <FamilyContext.Provider value={value}>{children}</FamilyContext.Provider>;
+}
+
+async function memberWithPhoto(member: Member, file: File): Promise<Member> {
+  const uploaded = await storeMemberPhoto(member.familyGroupId, member.id, file);
+  return { ...member, photoPath: uploaded.photoPath, photoUrl: uploaded.photoUrl };
 }
 
 export function useFamily(): FamilyContextValue {

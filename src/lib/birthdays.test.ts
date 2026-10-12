@@ -19,6 +19,8 @@ function named(dateOfBirth: string, fullName: string): Member {
     address: null,
     notes: "",
     linkedUserId: null,
+    photoPath: null,
+    photoUrl: null,
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z",
   };

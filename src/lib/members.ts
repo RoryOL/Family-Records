@@ -64,6 +64,8 @@ export function createMember(familyGroupId: string, draft: MemberDraft, now = ne
     address: draft.address ? normalizeAddress(draft.address) : null,
     notes: draft.notes.trim(),
     linkedUserId: null,
+    photoPath: null,
+    photoUrl: null,
     createdAt: timestamp,
     updatedAt: timestamp,
   };

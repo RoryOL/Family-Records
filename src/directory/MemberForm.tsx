@@ -1,5 +1,8 @@
+import { ImagePlus } from "lucide-react";
 import { useEffect, useId, useRef, useState, type FormEvent, type Ref } from "react";
+import { photoProblem, type MemberPhotoSelection } from "../lib/memberPhoto";
 import { SUGGESTED_RELATIONSHIPS } from "../types";
+import { MemberAvatar } from "./MemberAvatar";
 import { nextBirthdayLabel } from "./memberDisplay";
 import {
   dateWarning,
@@ -9,36 +12,59 @@ import {
   type MemberFormErrors,
   type MemberFormValues,
 } from "./memberForm";
-import { inputClass, labelClass } from "./styles";
+import { inputClass, labelClass, secondaryButtonClass } from "./styles";
 import type { MemberDraft } from "../types";
 
 export function MemberForm({
   initial,
   addressId,
   suggestions,
+  photoUrl = null,
+  hasPhoto = false,
   onSave,
   onDirtyChange,
 }: {
   initial: MemberFormValues;
   addressId?: string;
   suggestions: readonly string[];
-  onSave: (draft: MemberDraft) => void;
+  photoUrl?: string | null;
+  hasPhoto?: boolean;
+  onSave: (draft: MemberDraft, photo: MemberPhotoSelection) => void;
   onDirtyChange: (dirty: boolean) => void;
 }) {
   const [values, setValues] = useState(initial);
   const [errors, setErrors] = useState<MemberFormErrors>({});
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoRemoved, setPhotoRemoved] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const baseId = useId();
   const listId = `${baseId}-relationships`;
   const firstNameRef = useRef<HTMLInputElement>(null);
+  const photoRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const tags = [...new Set([...suggestions, ...SUGGESTED_RELATIONSHIPS])].sort((a, b) => a.localeCompare(b));
   const warning = dateWarning(values.dateOfBirth);
   const next = nextBirthdayLabel(values.dateOfBirth.trim() || null);
 
+  const showingSaved = hasPhoto && !photoRemoved && !photoFile;
+  const displayUrl = photoFile ? previewUrl : showingSaved ? photoUrl : null;
+
   useEffect(() => {
-    onDirtyChange(JSON.stringify(values) !== JSON.stringify(initial));
-  }, [values, initial, onDirtyChange]);
+    if (!photoFile) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(photoFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photoFile]);
+
+  useEffect(() => {
+    const textDirty = JSON.stringify(values) !== JSON.stringify(initial);
+    onDirtyChange(textDirty || photoFile !== null || photoRemoved);
+  }, [values, initial, onDirtyChange, photoFile, photoRemoved]);
 
   useEffect(() => {
     firstNameRef.current?.focus();
@@ -56,11 +82,66 @@ export function MemberForm({
     else if (nextErrors.dateOfBirth) dateRef.current?.focus();
     else if (nextErrors.email) emailRef.current?.focus();
     if (hasFormErrors(nextErrors)) return;
-    onSave(formValuesToDraft(values, addressId));
+    onSave(formValuesToDraft(values, addressId), { file: photoFile, remove: photoRemoved && !photoFile });
+  }
+
+  function choosePhoto(file: File) {
+    const problem = photoProblem(file);
+    if (problem) {
+      setPhotoError(problem);
+      return;
+    }
+    setPhotoError(null);
+    setPhotoRemoved(false);
+    setPhotoFile(file);
+  }
+
+  function clearPhoto() {
+    setPhotoFile(null);
+    setPhotoRemoved(true);
+    setPhotoError(null);
   }
 
   return (
     <form id="member-form" className="grid gap-4" noValidate onSubmit={onSubmit}>
+      <div>
+        <p className={labelClass}>Picture</p>
+        <div className="mt-2 flex items-center gap-4">
+          <MemberAvatar firstName={values.firstName} lastName={values.lastName} photoUrl={displayUrl} size="lg" />
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className={secondaryButtonClass} onClick={() => photoRef.current?.click()}>
+              <ImagePlus size={16} aria-hidden />
+              {photoFile || showingSaved ? "Change picture" : "Add picture"}
+            </button>
+            {photoFile || showingSaved ? (
+              <button type="button" className="px-3 py-2 text-sm font-semibold text-terracotta-deep" onClick={clearPhoto}>
+                Remove picture
+              </button>
+            ) : null}
+          </div>
+        </div>
+        <input
+          ref={photoRef}
+          id={`${baseId}-photo`}
+          className="sr-only"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          aria-label="Picture"
+          aria-describedby={photoError ? `${baseId}-photo-error` : undefined}
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (file) choosePhoto(file);
+          }}
+        />
+        {photoError ? (
+          <p id={`${baseId}-photo-error`} role="alert" className="mt-2 text-sm text-terracotta-deep">
+            {photoError}
+          </p>
+        ) : (
+          <p className="mt-2 text-sm text-stone-500">JPEG, PNG, or WebP, up to 12 MB.</p>
+        )}
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField
           id={`${baseId}-first`}
