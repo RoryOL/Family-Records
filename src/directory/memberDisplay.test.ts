@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createInitialState } from "../data/mockFamily";
-import { addressBadge, isBirthdaySoon, nextBirthdayLabel } from "./memberDisplay";
+import { addressBadge, initialsFrom, isBirthdaySoon, nextBirthdayLabel } from "./memberDisplay";
 
 const september22 = new Date(2026, 8, 22);
 
@@ -11,6 +11,12 @@ describe("member display", () => {
     expect(nextBirthdayLabel(null)).toBeNull();
     expect(isBirthdaySoon("1986-09-23", 7, september22)).toBe(true);
     expect(isBirthdaySoon("1994-09-21", 7, september22)).toBe(false);
+  });
+
+  it("builds initials from the name, and a question mark when the name is blank", () => {
+    expect(initialsFrom("Elena", "Harper")).toBe("EH");
+    expect(initialsFrom(" Aoife ", "")).toBe("A");
+    expect(initialsFrom("  ", " ")).toBe("?");
   });
 
   it("marks incomplete addresses and verified cities differently", () => {

@@ -1,4 +1,5 @@
 import type { Session, User } from "@supabase/supabase-js";
+import { memberPhotoBlob, MEMBER_PHOTO_BUCKET, photoObjectPath, photoProblem, STORED_PHOTO_MAX_BYTES } from "../lib/memberPhoto";
 import { nativeSignUpRedirect } from "../native/authLink";
 import type { FamilyState, Member } from "../types";
 import { getSupabase } from "./client";
@@ -84,8 +85,71 @@ export async function loadFamily(user: User): Promise<FamilyState | null> {
     group: groupFromRow(group),
     people: ((people ?? []) as FamilyUserRow[]).map(userFromRow),
     currentUserId: user.id,
-    members: ((members ?? []) as MemberRow[]).map(memberFromRow),
+    members: await withMemberPhotoUrls(((members ?? []) as MemberRow[]).map(memberFromRow)),
   };
+}
+
+const PHOTO_URL_SECONDS = 60 * 60;
+
+export async function withMemberPhotoUrls(members: readonly Member[]): Promise<Member[]> {
+  const paths = [...new Set(members.flatMap((member) => (member.photoPath ? [member.photoPath] : [])))];
+  if (paths.length === 0) return [...members];
+
+  try {
+    const urls = new Map<string, string>();
+    for (let index = 0; index < paths.length; index += 100) {
+      const batch = paths.slice(index, index + 100);
+      const { data, error } = await getSupabase().storage.from(MEMBER_PHOTO_BUCKET).createSignedUrls(batch, PHOTO_URL_SECONDS);
+      if (error || !data) continue;
+      for (const item of data) {
+        if (item.path && item.signedUrl && !item.error) urls.set(item.path, item.signedUrl);
+      }
+    }
+    return members.map((member) => {
+      const photoUrl = member.photoPath ? (urls.get(member.photoPath) ?? null) : null;
+      return photoUrl ? { ...member, photoUrl } : member;
+    });
+  } catch {
+    return [...members];
+  }
+}
+
+export async function storeMemberPhoto(familyGroupId: string, memberId: string, file: File): Promise<{ photoPath: string; photoUrl: string | null }> {
+  const problem = photoProblem(file);
+  if (problem) throw new Error(problem);
+
+  const blob = await memberPhotoBlob(file).catch(() => {
+    throw new Error("This picture could not be prepared.");
+  });
+  if (blob.size > STORED_PHOTO_MAX_BYTES) {
+    throw new Error("That picture is still too large after resizing. Choose a smaller one.");
+  }
+
+  const photoPath = photoObjectPath(familyGroupId, memberId);
+  const { error } = await getSupabase().storage.from(MEMBER_PHOTO_BUCKET).upload(photoPath, blob, {
+    contentType: "image/jpeg",
+    upsert: true,
+    cacheControl: "3600",
+  });
+  if (error) throw supabaseFailure(error);
+
+  return { photoPath, photoUrl: await signedPhotoUrl(photoPath) };
+}
+
+export async function discardMemberPhoto(path: string | null): Promise<void> {
+  if (!path) return;
+  const { error } = await getSupabase().storage.from(MEMBER_PHOTO_BUCKET).remove([path]);
+  if (error && !/not found/i.test(error.message)) throw supabaseFailure(error);
+}
+
+async function signedPhotoUrl(path: string): Promise<string | null> {
+  try {
+    const { data, error } = await getSupabase().storage.from(MEMBER_PHOTO_BUCKET).createSignedUrl(path, PHOTO_URL_SECONDS);
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  } catch {
+    return null;
+  }
 }
 
 export async function insertMembers(members: readonly Member[]): Promise<void> {

@@ -64,6 +64,8 @@ function profile(fields: {
     address: fields.address,
     notes: fields.notes,
     linkedUserId: fields.linkedUserId ?? null,
+    photoPath: null,
+    photoUrl: null,
     createdAt: SEEDED_AT,
     updatedAt: SEEDED_AT,
   };

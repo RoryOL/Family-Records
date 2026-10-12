@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import { formatLongDate } from "../lib/dates";
+import { MemberAvatar } from "./MemberAvatar";
 import { addressBadge, badgeClass, nextBirthdayLabel } from "./memberDisplay";
 import type { Member } from "../types";
 
@@ -44,9 +45,12 @@ export function MemberTable({ members, hrefFor }: { members: readonly Member[]; 
                 onClick={() => navigate(href)}
               >
                 <th scope="row" className="px-5 py-4 font-display text-base font-bold tracking-tight">
-                  <Link to={href} className="underline-offset-2 hover:underline" onClick={(event) => event.stopPropagation()}>
-                    {member.fullName}
-                  </Link>
+                  <span className="flex items-center gap-3">
+                    <MemberAvatar firstName={member.firstName} lastName={member.lastName} photoUrl={member.photoUrl} size="sm" />
+                    <Link to={href} className="underline-offset-2 hover:underline" onClick={(event) => event.stopPropagation()}>
+                      {member.fullName}
+                    </Link>
+                  </span>
                 </th>
                 <td className="px-5 py-4">{member.relationship || "—"}</td>
                 <td className="px-5 py-4">

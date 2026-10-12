@@ -7,6 +7,7 @@ import { emptyFormValues, memberToFormValues } from "./memberForm";
 import { MemberProfile } from "./MemberProfile";
 import { withSearch, withoutEdit } from "./paths";
 import { primaryButtonClass, secondaryButtonClass } from "./styles";
+import type { MemberPhotoSelection } from "../lib/memberPhoto";
 import { useFamily } from "../store/FamilyProvider";
 
 type CloseTarget = "directory" | "view";
@@ -75,17 +76,17 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
     if (event.target === event.currentTarget) requestClose("directory");
   }
 
-  async function save(draft: Parameters<typeof addMember>[0]) {
+  async function save(draft: Parameters<typeof addMember>[0], photo: MemberPhotoSelection) {
     setSaving(true);
     setSaveError(null);
     try {
       if (intent === "create") {
-        const created = await addMember(draft);
+        const created = await addMember(draft, photo.file);
         navigate(withSearch(`/members/${encodeURIComponent(created.id)}`, withoutEdit(searchParams)), { replace: true });
         return;
       }
       if (!member) return;
-      await updateMember(member.id, draft);
+      await updateMember(member.id, draft, photo);
       performClose("view");
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "That change could not be saved.");
@@ -144,6 +145,8 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
               initial={member ? memberToFormValues(member) : emptyFormValues()}
               addressId={member?.address?.id}
               suggestions={listRelationships(members)}
+              photoUrl={member?.photoUrl ?? null}
+              hasPhoto={Boolean(member?.photoPath)}
               onDirtyChange={onDirtyChange}
               onSave={save}
             />

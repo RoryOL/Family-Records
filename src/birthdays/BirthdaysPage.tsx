@@ -5,6 +5,7 @@ import { birthdayCalendar } from "../lib/calendar";
 import { birthdayTiming, parseBirthdayWindow, upcomingBirthdays } from "../lib/birthdays";
 import { formatLongDate, formatToday } from "../lib/dates";
 import { downloadFile, fileSlug } from "../lib/download";
+import { MemberAvatar } from "../directory/MemberAvatar";
 import { pageClass, secondaryButtonClass, surfaceClass } from "../directory/styles";
 import { useFamily } from "../store/FamilyProvider";
 import type { BirthdayWindow } from "../types";
@@ -81,6 +82,7 @@ export function BirthdaysPage() {
         <ol className="mt-8 grid gap-6">
           {upcoming.map((item) => {
             const soon = item.daysUntil <= 7;
+            const person = members.find((member) => member.id === item.memberId);
             return (
               <li key={item.memberId}>
                 <Link
@@ -89,10 +91,13 @@ export function BirthdaysPage() {
                     soon ? "border-amber-200/80 bg-gradient-to-r from-amber-500/10 to-orange-500/10" : "border-stone-200/60 bg-white"
                   }`}
                 >
-                  <span>
+                  <span className="flex items-center gap-4">
+                    {person ? <MemberAvatar firstName={person.firstName} lastName={person.lastName} photoUrl={person.photoUrl} /> : null}
+                    <span>
                     <span className="block font-display text-2xl font-bold tracking-tight">{item.fullName}</span>
                     <span className="mt-1 block text-sm text-stone-500">
                       {item.relationship || "Family"} · Turns {item.turningAge}
+                    </span>
                     </span>
                   </span>
                   <span className={`text-sm font-semibold ${soon ? "text-honey" : "text-stone-500"}`}>

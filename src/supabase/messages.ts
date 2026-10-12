@@ -26,6 +26,9 @@ export function friendlySupabaseMessage(message: string, code?: string): string 
   if (/sign in before/i.test(text)) {
     return text;
   }
+  if (/photo_path|member-photos|bucket not found/i.test(text)) {
+    return "Run the member photos migration in the Supabase SQL editor, then try again.";
+  }
   if (/row-level security/i.test(text)) {
     return "You do not have access to change that.";
   }

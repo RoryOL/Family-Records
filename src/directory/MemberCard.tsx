@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { formatLongDate } from "../lib/dates";
+import { MemberAvatar } from "./MemberAvatar";
 import { addressBadge, badgeClass, isBirthdaySoon, nextBirthdayLabel } from "./memberDisplay";
 import type { Member } from "../types";
 
@@ -16,12 +17,17 @@ export function MemberCard({ member, to }: { member: Member; to: string }) {
         </div>
       ) : null}
       <div className={`flex flex-1 flex-col px-6 pb-6 sm:px-8 sm:pb-8 ${soon ? "pt-5" : "pt-6 sm:pt-8"}`}>
-        <h2 className="font-display text-2xl font-bold tracking-tight">
-          <Link to={to} className="after:absolute after:inset-0 focus-visible:outline-none">
-            {member.fullName}
-          </Link>
-        </h2>
-        <p className="mt-1 text-sm text-stone-500">{member.relationship || "No relationship"}</p>
+        <div className="flex items-center gap-4">
+          <MemberAvatar firstName={member.firstName} lastName={member.lastName} photoUrl={member.photoUrl} />
+          <div className="min-w-0">
+            <h2 className="font-display text-2xl font-bold tracking-tight">
+              <Link to={to} className="after:absolute after:inset-0 focus-visible:outline-none">
+                {member.fullName}
+              </Link>
+            </h2>
+            <p className="mt-1 text-sm text-stone-500">{member.relationship || "No relationship"}</p>
+          </div>
+        </div>
         <p className="mt-5 text-sm">{member.dateOfBirth ? formatLongDate(member.dateOfBirth) : "No birthday on file"}</p>
         {next ? <p className={`text-sm font-semibold ${soon ? "text-honey" : "text-stone-500"}`}>{next}</p> : null}
         <p className="mt-5 text-sm">{member.phone ?? "No phone"}</p>

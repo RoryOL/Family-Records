@@ -1,5 +1,6 @@
 import { formatAddressBlock } from "../lib/address";
 import { formatLongDate } from "../lib/dates";
+import { MemberAvatar } from "./MemberAvatar";
 import { addressBadge, badgeClass, nextBirthdayLabel } from "./memberDisplay";
 import { labelClass } from "./styles";
 import type { FamilyUser, Member } from "../types";
@@ -11,7 +12,9 @@ export function MemberProfile({ member, people }: { member: Member; people: read
   const address = member.address ? formatAddressBlock(member.address) : "";
 
   return (
-    <dl className="grid gap-5">
+    <div>
+      <MemberAvatar firstName={member.firstName} lastName={member.lastName} photoUrl={member.photoUrl} size="lg" />
+      <dl className="mt-6 grid gap-5">
       <div>
         <dt className={labelClass}>Relationship</dt>
         <dd className="mt-1 text-sm">{member.relationship || "—"}</dd>
@@ -67,6 +70,7 @@ export function MemberProfile({ member, people }: { member: Member; people: read
         <dt className={labelClass}>Login</dt>
         <dd className="mt-1 text-sm">{login ? `${login.email} · ${login.role === "owner" ? "Owner" : "Editor"}` : "No sign-in linked"}</dd>
       </div>
-    </dl>
+      </dl>
+    </div>
   );
 }
