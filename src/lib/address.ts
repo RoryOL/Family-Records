@@ -1,4 +1,5 @@
 import type { Address, Member } from "../types";
+import { presentEircode } from "./eircode";
 
 function isIreland(country: string): boolean {
   const name = country.trim().toLowerCase();
@@ -26,7 +27,7 @@ export function missingAddressParts(address: Address): string[] {
 /** Street, locality, and country, without the recipient's name. */
 export function formatAddressBlock(address: Address): string {
   if (address.format === "ie") {
-    const eircode = address.postalCode.trim().toUpperCase();
+    const eircode = presentEircode(address.postalCode).toUpperCase();
     const country = isIreland(address.country) ? "" : address.country;
     return [address.line1, address.line2, address.line3, address.city, address.region, eircode, country]
       .map((line) => line.trim())

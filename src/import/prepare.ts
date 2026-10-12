@@ -1,4 +1,5 @@
 import { parseIsoDate } from "../lib/dates";
+import { eircodeAreaDefaults, lookupEircode, presentEircode } from "../lib/eircode";
 import type { AddressFormat, ColumnMapping, ImportIssue, ImportTargetField, MemberDraft } from "../types";
 
 export const IMPORT_TARGETS: { value: ImportTargetField | "ignore"; label: string }[] = [
@@ -79,6 +80,7 @@ export function previewImport(
     const dateOfBirth = readDate(values.dateOfBirth ?? "", row.rowNumber, issues, today);
     const email = readEmail(values.email ?? "", row.rowNumber, issues);
     const address = readAddress(values);
+    if (address) applyEircodeLookup(address, row.rowNumber, issues);
     const nameKey = normalizeName(`${firstName} ${lastName}`);
 
     if (firstName && seen.has(nameKey)) {
@@ -199,6 +201,59 @@ function readEmail(value: string, rowNumber: number, issues: ImportIssue[]): str
     return null;
   }
   return email;
+}
+
+function applyEircodeLookup(address: NonNullable<MemberDraft["address"]>, rowNumber: number, issues: ImportIssue[]) {
+  if (address.format !== "ie" || !address.postalCode.trim()) return;
+
+  const lookup = lookupEircode(address.postalCode);
+  if (!lookup) {
+    issues.push({
+      rowNumber,
+      field: "postalCode",
+      message: "This is not a recognised Eircode.",
+      severity: "warning",
+    });
+    return;
+  }
+
+  address.postalCode = presentEircode(address.postalCode);
+  if (lookup.status === "invalid") {
+    issues.push({
+      rowNumber,
+      field: "postalCode",
+      message: "The characters after the routing key are not a valid Eircode.",
+      severity: "warning",
+    });
+  }
+
+  const defaults = eircodeAreaDefaults(address.postalCode);
+  if (!defaults) {
+    if (!address.city.trim() || !address.region.trim()) {
+      const code = lookup.formatted ?? lookup.routingKey;
+      issues.push({
+        rowNumber,
+        field: "postalCode",
+        message: `${code} covers more than one county. Pick the town and county that match the address.`,
+        severity: "warning",
+      });
+    }
+    return;
+  }
+  const filledCity = !address.city.trim() && Boolean(defaults.city);
+  const filledRegion = !address.region.trim() && Boolean(defaults.region);
+  if (filledCity) address.city = defaults.city;
+  if (filledRegion) address.region = defaults.region;
+  if (!filledCity && !filledRegion) return;
+
+  const code = lookup.formatted ?? lookup.routingKey;
+  const message =
+    filledCity && filledRegion
+      ? `Town and county filled from ${code}: ${defaults.city}, Co. ${defaults.region}.`
+      : filledRegion
+        ? `County filled from ${code}: Co. ${defaults.region}. This routing key covers more than one town.`
+        : `Town filled from ${code}: ${defaults.city}.`;
+  issues.push({ rowNumber, field: "postalCode", message, severity: "warning" });
 }
 
 function readAddress(values: Partial<Record<ImportTargetField, string>>): MemberDraft["address"] {

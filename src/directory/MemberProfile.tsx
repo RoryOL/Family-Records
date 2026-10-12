@@ -1,4 +1,5 @@
 import { formatAddressBlock } from "../lib/address";
+import { eircodeSummary, lookupEircode } from "../lib/eircode";
 import { formatLongDate } from "../lib/dates";
 import { addressBadge, badgeClass, nextBirthdayLabel } from "./memberDisplay";
 import { labelClass } from "./styles";
@@ -9,6 +10,7 @@ export function MemberProfile({ member, people }: { member: Member; people: read
   const next = nextBirthdayLabel(member.dateOfBirth);
   const login = people.find((person) => person.id === member.linkedUserId);
   const address = member.address ? formatAddressBlock(member.address) : "";
+  const eircode = member.address?.format === "ie" ? lookupEircode(member.address.postalCode) : null;
 
   return (
     <dl className="grid gap-5">
@@ -57,6 +59,7 @@ export function MemberProfile({ member, people }: { member: Member; people: read
         <dd className="mt-1 text-sm">
           <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badgeClass(badge.tone)}`}>{badge.label}</span>
           {address ? <p className="mt-2 whitespace-pre-line leading-6">{address}</p> : <p className="mt-2 text-stone-500">No postal address</p>}
+          {eircode ? <p className="mt-2 text-sm text-stone-500">{eircodeSummary(eircode)}</p> : null}
         </dd>
       </div>
       <div>
