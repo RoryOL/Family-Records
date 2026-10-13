@@ -62,10 +62,12 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+          ANDROID_VERSION_NAME: ${{ github.run_number }}
         run: npm run android:apk
 
       - name: Name the package
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk family-records.apk
+        run: cp android/app/build/outputs/apk/release/app-release.apk family-records.apk
 
       - name: Upload the APK
         uses: actions/upload-artifact@v7
@@ -74,5 +76,19 @@ jobs:
           path: family-records.apk
           if-no-files-found: error
 
+      - name: Publish the update
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+          ANDROID_VERSION_NAME: ${{ github.run_number }}
+        run: bash .github/scripts/publish-android-release.sh
+
       - name: Summarize the run
-        run: echo "Download family-records.apk from the artifacts on this run, copy it to the phone, and open it to install." >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "Published family-records.apk. Phones that already have this signing key download and install it." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Download family-records.apk from the artifacts on this run. Builds on main are what the installed app updates to." >> "$GITHUB_STEP_SUMMARY"
+          fi

@@ -12,9 +12,9 @@ npm run dev
 
 Fill `.env` with the project URL and the anon key from Supabase → Project Settings → API. Leave the service role key out of the app.
 
-In the Supabase SQL editor, run `supabase/migrations/20260922120000_family_records_household.sql`, then `supabase/migrations/20261012120000_member_photos.sql`. The second file adds a private picture for each person. Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
+In the Supabase SQL editor, run `supabase/migrations/20260922120000_family_records_household.sql`, then `supabase/migrations/20261012120000_member_photos.sql`, then `supabase/migrations/20261013120000_app_releases.sql`. The second file adds a private picture for each person. The third lets the phone download a newer APK. Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
 
-`npm test` checks the store, directory filters, the member form, pictures, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, and the home-screen hint. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
+`npm test` checks the store, directory filters, the member form, pictures, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, the home-screen hint, and the APK update check. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
 
 ## Install
 
@@ -24,14 +24,21 @@ The production build is an installable app. On Chrome or Edge, open Family Recor
 
 ## Android
 
-The phone app is an APK. After it is installed, Family Records opens on the phone and stores the household in Supabase.
+The phone app is an APK. After it is installed, Family Records opens on the phone and stores the household in Supabase. A build published from `main` replaces the installed app when its version number is higher.
 
 GitHub builds the package. Under the repository’s Settings → Secrets and variables → Actions, add:
 
 - `VITE_SUPABASE_URL`, the project URL from Supabase → Project Settings → API
 - `VITE_SUPABASE_ANON_KEY`, the anon key from that same page
+- `SUPABASE_SERVICE_ROLE_KEY`, the service role from that same page
 
-Open Actions → Android APK and download `family-records.apk` from the run. On a pull request, the same file is attached to the Android APK check. Copy it to the phone and open it to install. Android will ask you to allow installation from that source.
+The service role publishes the APK. It is not part of the app. Every APK is signed with `android/app/sideload.keystore`, so a newer file can install over the last one.
+
+Install once from Actions → Android APK → `family-records.apk`. If an older Family Records is already on the phone, uninstall it first. That older package was signed with a different key, and Android will not replace it. Open the new APK and allow installation from that source.
+
+After that, the app checks for a build each time it opens. It downloads the APK and installs it. The first time, Android asks you to allow Family Records to install updates. Later builds install on their own when the phone allows a self-update, and otherwise Android asks you to confirm the install.
+
+A pull request still produces an APK on its Android APK check, but that file is not published to phones.
 
 A build on a machine with a JDK, the Android SDK, and `ANDROID_HOME` uses:
 
@@ -39,7 +46,7 @@ A build on a machine with a JDK, the Android SDK, and `ANDROID_HOME` uses:
 npm run android:apk
 ```
 
-That package is `android/app/build/outputs/apk/debug/app-debug.apk`.
+That package is `android/app/build/outputs/apk/release/app-release.apk`. A local build is version 1. A GitHub build uses the workflow run number, so the phone prefers the published one.
 
 Under Supabase → Authentication → URL configuration, add `familyrecords://auth-callback` to the redirect allow list. Confirmation links then open the installed app. Sign-in for an account that is already confirmed works as soon as the APK is installed.
 
