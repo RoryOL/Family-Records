@@ -1,11 +1,14 @@
 import { parseIsoDate } from "../lib/dates";
+import { linkProblem } from "../lib/kinship";
 import { fullNameFrom } from "../lib/members";
-import type { AddressFormat, AddressInput, Member, MemberDraft } from "../types";
+import type { AddressFormat, AddressInput, Gender, Member, MemberDraft, MemberLinkInput } from "../types";
 
 export interface MemberFormValues {
   firstName: string;
   lastName: string;
   relationship: string;
+  gender: "" | Gender;
+  links: MemberLinkInput[];
   dateOfBirth: string;
   phone: string;
   email: string;
@@ -25,6 +28,7 @@ export interface MemberFormErrors {
   firstName?: string;
   dateOfBirth?: string;
   email?: string;
+  links?: string;
 }
 
 export function emptyFormValues(): MemberFormValues {
@@ -32,6 +36,8 @@ export function emptyFormValues(): MemberFormValues {
     firstName: "",
     lastName: "",
     relationship: "",
+    gender: "",
+    links: [],
     dateOfBirth: "",
     phone: "",
     email: "",
@@ -48,11 +54,13 @@ export function emptyFormValues(): MemberFormValues {
   };
 }
 
-export function memberToFormValues(member: Member): MemberFormValues {
+export function memberToFormValues(member: Member, links: readonly MemberLinkInput[] = []): MemberFormValues {
   return {
     firstName: member.firstName,
     lastName: member.lastName,
     relationship: member.relationship,
+    gender: member.gender ?? "",
+    links: links.map((link) => ({ ...link })),
     dateOfBirth: member.dateOfBirth ?? "",
     phone: member.phone ?? "",
     email: member.email ?? "",
@@ -81,6 +89,9 @@ export function validateMemberForm(values: MemberFormValues): MemberFormErrors {
     errors.email = "Enter an email like name@example.com.";
   }
 
+  const links = linkProblem(values.links);
+  if (links) errors.links = links;
+
   return errors;
 }
 
@@ -106,6 +117,7 @@ export function formValuesToDraft(values: MemberFormValues, addressId?: string):
     lastName,
     fullName: fullNameFrom(firstName, lastName),
     relationship: values.relationship,
+    gender: values.gender || null,
     dateOfBirth: values.dateOfBirth.trim() || null,
     phone: values.phone.trim() || null,
     email: values.email.trim() || null,

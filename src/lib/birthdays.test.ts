@@ -13,6 +13,7 @@ function named(dateOfBirth: string, fullName: string): Member {
     lastName: "Case",
     fullName,
     relationship: "Friend",
+    gender: null,
     dateOfBirth,
     phone: null,
     email: null,

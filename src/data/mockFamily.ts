@@ -1,4 +1,4 @@
-import type { Address, FamilyState, Member, MemberDraft } from "../types";
+import type { Address, FamilyState, Gender, Member, MemberDraft, RelationKind } from "../types";
 
 const SEEDED_AT = "2026-01-15T18:00:00.000Z";
 const GROUP_ID = "grp_harpers";
@@ -44,6 +44,7 @@ function profile(fields: {
   firstName: string;
   lastName: string;
   relationship: string;
+  gender?: Gender | null;
   dateOfBirth: string | null;
   phone: string | null;
   email: string | null;
@@ -58,6 +59,7 @@ function profile(fields: {
     lastName: fields.lastName,
     fullName: `${fields.firstName} ${fields.lastName}`,
     relationship: fields.relationship,
+    gender: fields.gender ?? null,
     dateOfBirth: fields.dateOfBirth,
     phone: fields.phone,
     email: fields.email,
@@ -97,12 +99,14 @@ export const mockFamily: FamilyState = {
       joinedAt: "2026-02-02T16:00:00.000Z",
     },
   ],
+  relations: [],
   members: [
     profile({
       id: "mem_elena",
       firstName: "Elena",
       lastName: "Harper",
       relationship: "Self",
+      gender: "female",
       dateOfBirth: "1988-04-12",
       phone: "(503) 555-0142",
       email: "elena@harper.example",
@@ -115,6 +119,7 @@ export const mockFamily: FamilyState = {
       firstName: "Marcus",
       lastName: "Harper",
       relationship: "Spouse",
+      gender: "male",
       dateOfBirth: "1986-09-23",
       phone: "(503) 555-0174",
       email: "marcus@harper.example",
@@ -127,6 +132,7 @@ export const mockFamily: FamilyState = {
       firstName: "Jonah",
       lastName: "Harper",
       relationship: "Child",
+      gender: "male",
       dateOfBirth: "2016-09-26",
       phone: null,
       email: null,
@@ -138,6 +144,7 @@ export const mockFamily: FamilyState = {
       firstName: "Willa",
       lastName: "Harper",
       relationship: "Child",
+      gender: "female",
       dateOfBirth: "2019-10-11",
       phone: null,
       email: null,
@@ -149,6 +156,7 @@ export const mockFamily: FamilyState = {
       firstName: "Ruth",
       lastName: "Ellison",
       relationship: "Parent",
+      gender: "female",
       dateOfBirth: "1958-11-02",
       phone: "(541) 555-0160",
       email: "ruth.ellison@example.com",
@@ -160,6 +168,7 @@ export const mockFamily: FamilyState = {
       firstName: "Arthur",
       lastName: "Ellison",
       relationship: "Parent",
+      gender: "male",
       dateOfBirth: "1956-12-18",
       phone: "(541) 555-0161",
       email: "arthur.ellison@example.com",
@@ -171,6 +180,7 @@ export const mockFamily: FamilyState = {
       firstName: "Nora",
       lastName: "Blake",
       relationship: "Sibling",
+      gender: "female",
       dateOfBirth: "1991-01-19",
       phone: "(206) 555-0133",
       email: "nora.blake@example.com",
@@ -191,6 +201,7 @@ export const mockFamily: FamilyState = {
       firstName: "Samir",
       lastName: "Shah",
       relationship: "Cousin",
+      gender: "male",
       dateOfBirth: "1994-09-21",
       phone: "(415) 555-0188",
       email: "samir.shah@example.com",
@@ -211,6 +222,7 @@ export const mockFamily: FamilyState = {
       firstName: "Priya",
       lastName: "Shah",
       relationship: "Cousin",
+      gender: "female",
       dateOfBirth: null,
       phone: "(415) 555-0104",
       email: "priya.shah@example.com",
@@ -231,6 +243,7 @@ export const mockFamily: FamilyState = {
       firstName: "Helen",
       lastName: "Cho",
       relationship: "Aunt",
+      gender: "female",
       dateOfBirth: "1962-08-30",
       phone: "(206) 555-0190",
       email: "helen.cho@example.com",
@@ -260,6 +273,22 @@ export const mockFamily: FamilyState = {
   ],
 };
 
+/** Parent, partner, and sibling links for the Harper sample, matched by full name after import. */
+export function harperLinkPlan(): { fromName: string; toName: string; kind: RelationKind }[] {
+  return [
+    { fromName: "Arthur Ellison", toName: "Ruth Ellison", kind: "spouse" },
+    { fromName: "Arthur Ellison", toName: "Elena Harper", kind: "parent" },
+    { fromName: "Ruth Ellison", toName: "Elena Harper", kind: "parent" },
+    { fromName: "Arthur Ellison", toName: "Nora Blake", kind: "parent" },
+    { fromName: "Ruth Ellison", toName: "Nora Blake", kind: "parent" },
+    { fromName: "Elena Harper", toName: "Marcus Harper", kind: "spouse" },
+    { fromName: "Elena Harper", toName: "Jonah Harper", kind: "parent" },
+    { fromName: "Marcus Harper", toName: "Jonah Harper", kind: "parent" },
+    { fromName: "Elena Harper", toName: "Willa Harper", kind: "parent" },
+    { fromName: "Marcus Harper", toName: "Willa Harper", kind: "parent" },
+  ];
+}
+
 export function createInitialState(): FamilyState {
   return structuredClone(mockFamily);
 }
@@ -271,6 +300,7 @@ export function sampleMemberDrafts(): MemberDraft[] {
     lastName: member.lastName,
     fullName: member.fullName,
     relationship: member.relationship,
+    gender: member.gender,
     dateOfBirth: member.dateOfBirth,
     phone: member.phone,
     email: member.email,

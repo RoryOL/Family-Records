@@ -73,6 +73,7 @@ const aoife: Member = {
   lastName: "Murphy",
   fullName: "Aoife Murphy",
   relationship: "Cousin",
+  gender: null,
   dateOfBirth: null,
   phone: null,
   email: null,

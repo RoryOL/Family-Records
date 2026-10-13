@@ -10,11 +10,15 @@ import {
   groupFromRow,
   memberFromRow,
   memberToInsert,
+  relationFromRow,
+  relationToInsert,
   userFromRow,
   type FamilyGroupRow,
   type FamilyUserRow,
   type MemberRow,
+  type RelationRow,
 } from "./rows";
+import type { MemberRelation } from "../types";
 
 export type SignUpResult = "signed-in" | "confirm-email" | "exists";
 
@@ -74,18 +78,24 @@ export async function loadFamily(user: User): Promise<FamilyState | null> {
   const group = firstRelation(membership.family_groups as FamilyGroupRow | FamilyGroupRow[] | null);
   if (!group) throw new Error("This account is missing its household.");
 
-  const [{ data: people, error: peopleError }, { data: members, error: membersError }] = await Promise.all([
+  const [{ data: people, error: peopleError }, { data: members, error: membersError }, { data: relations, error: relationsError }] = await Promise.all([
     supabase.from("family_users").select("user_id, display_name, email, role, joined_at").eq("family_group_id", group.id).order("joined_at"),
     supabase.from("members").select("*, addresses(*)").eq("family_group_id", group.id).order("last_name").order("first_name"),
+    supabase.from("member_relations").select("id, family_group_id, from_member_id, to_member_id, kind").eq("family_group_id", group.id),
   ]);
   if (peopleError) throw supabaseFailure(peopleError);
   if (membersError) throw supabaseFailure(membersError);
+  if (relationsError) throw supabaseFailure(relationsError);
 
   return {
     group: groupFromRow(group),
     people: ((people ?? []) as FamilyUserRow[]).map(userFromRow),
     currentUserId: user.id,
     members: await withMemberPhotoUrls(((members ?? []) as MemberRow[]).map(memberFromRow)),
+    relations: ((relations ?? []) as RelationRow[]).flatMap((row) => {
+      const relation = relationFromRow(row);
+      return relation ? [relation] : [];
+    }),
   };
 }
 
@@ -179,6 +189,19 @@ export async function updateStoredMember(member: Member): Promise<void> {
 
   const { error: addressError } = await supabase.from("addresses").upsert(addressToInsert(member.address, member.id), { onConflict: "member_id" });
   if (addressError) throw supabaseFailure(addressError);
+}
+
+export async function insertRelations(relations: readonly MemberRelation[]): Promise<void> {
+  if (relations.length === 0) return;
+  const { error } = await getSupabase().from("member_relations").insert(relations.map(relationToInsert));
+  if (error) throw supabaseFailure(error);
+}
+
+export async function replaceMemberRelations(memberId: string, relations: readonly MemberRelation[]): Promise<void> {
+  const supabase = getSupabase();
+  const { error } = await supabase.from("member_relations").delete().or(`from_member_id.eq.${memberId},to_member_id.eq.${memberId}`);
+  if (error) throw supabaseFailure(error);
+  await insertRelations(relations.filter((relation) => relation.fromMemberId === memberId || relation.toMemberId === memberId));
 }
 
 export async function deleteStoredMember(id: string): Promise<void> {

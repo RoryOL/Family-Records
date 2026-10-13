@@ -2,6 +2,7 @@ import { Copy, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { MemberAvatar } from "../directory/MemberAvatar";
+import { focusMemberId, relationshipSummary } from "../lib/kinship";
 import { pageClass, primaryButtonClass, secondaryButtonClass, surfaceClass } from "../directory/styles";
 import { formatAddressBlock, formatMailingLabels } from "../lib/address";
 import { eircodeMailingNote } from "../lib/eircode";
@@ -10,7 +11,9 @@ import { mailingCsv, verifiedMailingMembers } from "../lib/mailingCsv";
 import { useFamily } from "../store/FamilyProvider";
 
 export function CardsPage() {
-  const { group, members } = useFamily();
+  const { group, members, relations, currentUser } = useFamily();
+  const focusId = focusMemberId(members, currentUser.id);
+  const people = members.map((member) => ({ id: member.id, fullName: member.fullName, gender: member.gender }));
   const ready = verifiedMailingMembers(members);
   const labels = formatMailingLabels(ready);
   const skipped = members
@@ -92,7 +95,9 @@ export function CardsPage() {
                             {member.fullName}
                           </Link>
                         </h2>
-                        <p className="mt-1 text-sm text-stone-500">{member.relationship || "Family"}</p>
+                        <p className="mt-1 text-sm text-stone-500">
+                      {relationshipSummary({ id: member.id, fullName: member.fullName, gender: member.gender }, people, relations, focusId, member.relationship) || "Family"}
+                    </p>
                       </div>
                     </div>
                     <p className="mt-5 whitespace-pre-line text-sm leading-6">

@@ -1,4 +1,4 @@
-import type { Address, AddressFormat, FamilyGroup, FamilyUser, Member } from "../types";
+import type { Address, AddressFormat, FamilyGroup, FamilyUser, Member, MemberRelation, RelationKind } from "../types";
 
 export interface FamilyGroupRow {
   id: string;
@@ -37,6 +37,8 @@ export interface MemberRow {
   last_name: string;
   full_name: string;
   relationship: string;
+  /** Absent on rows loaded before the gender column existed. */
+  gender?: string | null;
   date_of_birth: string | null;
   phone: string | null;
   email: string | null;
@@ -56,6 +58,7 @@ export interface MemberInsert {
   last_name: string;
   full_name: string;
   relationship: string;
+  gender: string | null;
   date_of_birth: string | null;
   phone: string | null;
   email: string | null;
@@ -130,6 +133,7 @@ export function memberFromRow(row: MemberRow): Member {
     lastName: row.last_name,
     fullName: row.full_name,
     relationship: row.relationship,
+    gender: row.gender === "female" || row.gender === "male" ? row.gender : null,
     dateOfBirth: row.date_of_birth ? row.date_of_birth.slice(0, 10) : null,
     phone: row.phone,
     email: row.email,
@@ -151,6 +155,7 @@ export function memberToInsert(member: Member): MemberInsert {
     last_name: member.lastName,
     full_name: member.fullName,
     relationship: member.relationship,
+    gender: member.gender,
     date_of_birth: member.dateOfBirth,
     phone: member.phone,
     email: member.email,
@@ -185,6 +190,42 @@ export function firstRelation<T>(value: T | T[] | null | undefined): T | null {
 
 function firstAddress(value: AddressRow | AddressRow[] | null): AddressRow | null {
   return firstRelation(value);
+}
+
+export interface RelationRow {
+  id: string;
+  family_group_id: string;
+  from_member_id: string;
+  to_member_id: string;
+  kind: string;
+}
+
+export function relationFromRow(row: RelationRow): MemberRelation | null {
+  if (row.kind !== "parent" && row.kind !== "spouse" && row.kind !== "sibling") return null;
+  const kind: RelationKind = row.kind;
+  return {
+    id: row.id,
+    familyGroupId: row.family_group_id,
+    fromMemberId: row.from_member_id,
+    toMemberId: row.to_member_id,
+    kind,
+  };
+}
+
+export function relationToInsert(relation: MemberRelation): {
+  id: string;
+  family_group_id: string;
+  from_member_id: string;
+  to_member_id: string;
+  kind: RelationKind;
+} {
+  return {
+    id: relation.id,
+    family_group_id: relation.familyGroupId,
+    from_member_id: relation.fromMemberId,
+    to_member_id: relation.toMemberId,
+    kind: relation.kind,
+  };
 }
 
 function addressFromRow(row: AddressRow): Address {

@@ -12,6 +12,15 @@ export type IsoDateTime = string;
 /** Owner manages the group. Editors can read and update member details. */
 export type FamilyRole = "owner" | "editor";
 
+/** Used to choose niece or nephew, brother or sister, and the other paired terms. */
+export type Gender = "female" | "male";
+
+/** Stored link. Parent points from parent to child. Partner and sibling links are stored once. */
+export type RelationKind = "parent" | "spouse" | "sibling";
+
+/** How the person being edited is related to someone already in the household. */
+export type LinkRole = "parent" | "child" | "sibling" | "spouse";
+
 /** Irish layout is the household default. International keeps street, region, and country. */
 export type AddressFormat = "ie" | "international";
 
@@ -45,6 +54,7 @@ export interface Member {
   lastName: string;
   fullName: string;
   relationship: string;
+  gender: Gender | null;
   dateOfBirth: IsoDate | null;
   phone: string | null;
   email: string | null;
@@ -65,6 +75,7 @@ export interface MemberDraft {
   lastName: string;
   fullName?: string;
   relationship: string;
+  gender?: Gender | null;
   dateOfBirth: IsoDate | null;
   phone: string | null;
   email: string | null;
@@ -73,6 +84,20 @@ export interface MemberDraft {
 }
 
 export type MemberPatch = Partial<MemberDraft>;
+
+export interface MemberRelation {
+  id: string;
+  familyGroupId: string;
+  fromMemberId: string;
+  toMemberId: string;
+  kind: RelationKind;
+}
+
+/** One row in the member form: this person is the parent, child, sibling, or partner of someone else. */
+export interface MemberLinkInput {
+  otherId: string;
+  role: LinkRole;
+}
 
 export interface FamilyGroup {
   id: string;
@@ -97,6 +122,7 @@ export interface FamilyState {
   people: FamilyUser[];
   currentUserId: string;
   members: Member[];
+  relations: MemberRelation[];
 }
 
 export type BirthdayWindow = 7 | 30 | 90;

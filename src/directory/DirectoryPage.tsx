@@ -1,8 +1,8 @@
 import { FileSpreadsheet, LayoutGrid, Plus, Table } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, Outlet, useSearchParams } from "react-router";
-import { sampleMemberDrafts } from "../data/mockFamily";
 import { filterMembers, listRelationships, parseDirectoryView } from "./filters";
+import { focusMemberId, relationshipSummary } from "../lib/kinship";
 import { MemberCard } from "./MemberCard";
 import { MemberTable } from "./MemberTable";
 import { withSearch, withoutEdit } from "./paths";
@@ -10,15 +10,25 @@ import { inputClass, labelClass, pageClass, primaryButtonClass, secondaryButtonC
 import { useFamily } from "../store/FamilyProvider";
 
 export function DirectoryPage() {
-  const { group, currentUser, members, importMembers } = useFamily();
+  const { group, currentUser, members, relations, addSampleHousehold } = useFamily();
   const [searchParams, setSearchParams] = useSearchParams();
   const [sampling, setSampling] = useState(false);
   const [sampleError, setSampleError] = useState<string | null>(null);
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   const relationship = searchParams.get("relationship") ?? "";
   const view = parseDirectoryView(searchParams.get("view"));
-  const results = filterMembers(members, query, relationship);
-  const relationships = listRelationships(members);
+  const focusId = focusMemberId(members, currentUser.id);
+  const labels = useMemo(() => {
+    const people = members.map((member) => ({ id: member.id, fullName: member.fullName, gender: member.gender }));
+    return new Map(
+      members.map((member) => [
+        member.id,
+        relationshipSummary({ id: member.id, fullName: member.fullName, gender: member.gender }, people, relations, focusId, member.relationship),
+      ]),
+    );
+  }, [members, relations, focusId]);
+  const results = filterMembers(members, query, relationship, labels);
+  const relationships = listRelationships(members, labels);
   const filterChoices =
     relationship && !relationships.includes(relationship) ? [relationship, ...relationships] : relationships;
   const listSearch = withoutEdit(searchParams);
@@ -135,7 +145,7 @@ export function DirectoryPage() {
                 onClick={() => {
                   setSampling(true);
                   setSampleError(null);
-                  void importMembers(sampleMemberDrafts())
+                  void addSampleHousehold()
                     .catch((error: unknown) => {
                       setSampleError(error instanceof Error ? error.message : "The sample household could not be added.");
                     })
@@ -154,13 +164,13 @@ export function DirectoryPage() {
         </div>
       ) : view === "table" ? (
         <div className="mt-6">
-          <MemberTable members={results} hrefFor={(id) => withSearch(`/members/${encodeURIComponent(id)}`, listSearch)} />
+          <MemberTable members={results} hrefFor={(id) => withSearch(`/members/${encodeURIComponent(id)}`, listSearch)} labelFor={(id) => labels.get(id) ?? ""} />
         </div>
       ) : (
         <ul className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {results.map((member) => (
             <li key={member.id}>
-              <MemberCard member={member} to={withSearch(`/members/${encodeURIComponent(member.id)}`, listSearch)} />
+              <MemberCard member={member} to={withSearch(`/members/${encodeURIComponent(member.id)}`, listSearch)} relationshipLabel={labels.get(member.id)} />
             </li>
           ))}
         </ul>

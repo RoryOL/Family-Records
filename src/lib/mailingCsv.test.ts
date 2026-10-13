@@ -27,6 +27,7 @@ describe("mailing export", () => {
       lastName: "Lovelace",
       fullName: "=Ada Lovelace",
       relationship: "Friend",
+      gender: null,
       dateOfBirth: null,
       phone: null,
       email: null,
