@@ -4,7 +4,7 @@ import { MemberAvatar } from "./MemberAvatar";
 import { addressBadge, badgeClass, nextBirthdayLabel } from "./memberDisplay";
 import type { Member } from "../types";
 
-export function MemberTable({ members, hrefFor }: { members: readonly Member[]; hrefFor: (id: string) => string }) {
+export function MemberTable({ members, hrefFor, labelFor }: { members: readonly Member[]; hrefFor: (id: string) => string; labelFor?: (id: string) => string }) {
   const navigate = useNavigate();
 
   return (
@@ -52,7 +52,7 @@ export function MemberTable({ members, hrefFor }: { members: readonly Member[]; 
                     </Link>
                   </span>
                 </th>
-                <td className="px-5 py-4">{member.relationship || "—"}</td>
+                <td className="px-5 py-4">{labelFor?.(member.id) || member.relationship || "—"}</td>
                 <td className="px-5 py-4">
                   <div>{member.dateOfBirth ? formatLongDate(member.dateOfBirth) : "—"}</div>
                   {next ? <div className="text-stone-500">{next}</div> : null}

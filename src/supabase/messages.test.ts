@@ -19,5 +19,8 @@ describe("friendlySupabaseMessage", () => {
       "Run the member photos migration in the Supabase SQL editor, then try again.",
     );
     expect(friendlySupabaseMessage("Bucket not found")).toBe("Run the member photos migration in the Supabase SQL editor, then try again.");
+    expect(friendlySupabaseMessage("Could not find the table 'public.member_relations' in the schema cache")).toBe(
+      "Run the family tree migration in the Supabase SQL editor, then try again.",
+    );
   });
 });

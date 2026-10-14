@@ -28,7 +28,11 @@ export function familyReducer(state: FamilyState, action: FamilyAction): FamilyS
     case "remove": {
       const members = state.members.filter((member) => member.id !== action.id);
       if (members.length === state.members.length) return state;
-      return { ...state, members };
+      return {
+        ...state,
+        members,
+        relations: state.relations.filter((relation) => relation.fromMemberId !== action.id && relation.toMemberId !== action.id),
+      };
     }
     case "reset":
       return createInitialState();

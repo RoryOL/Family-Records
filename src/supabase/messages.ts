@@ -26,6 +26,9 @@ export function friendlySupabaseMessage(message: string, code?: string): string 
   if (/sign in before/i.test(text)) {
     return text;
   }
+  if (/member_relations|column .*gender|schema cache/i.test(text) && /relation|gender|member_relations/i.test(text)) {
+    return "Run the family tree migration in the Supabase SQL editor, then try again.";
+  }
   if (/photo_path|member-photos|bucket not found/i.test(text)) {
     return "Run the member photos migration in the Supabase SQL editor, then try again.";
   }

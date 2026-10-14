@@ -26,6 +26,7 @@ describe("birthdayCalendar", () => {
       lastName: "Lopez, Jr.",
       fullName: "Ana; Lopez, Jr.",
       relationship: "Friend",
+      gender: null,
       dateOfBirth: "1990-01-02",
       phone: null,
       email: null,

@@ -5,6 +5,8 @@ import { GateFrame } from "../auth/GateFrame";
 import { primaryButtonClass } from "../directory/styles";
 import { HouseholdPage } from "../auth/HouseholdPage";
 import { SetupPage } from "../auth/SetupPage";
+import { harperLinkPlan, sampleMemberDrafts } from "../data/mockFamily";
+import { applyMemberLinks, makeRelation } from "../lib/kinship";
 import type { MemberPhotoSelection } from "../lib/memberPhoto";
 import { createMember, mergeMember } from "../lib/members";
 import { getSupabase, supabaseConfig } from "../supabase/client";
@@ -13,8 +15,10 @@ import {
   deleteStoredMember,
   discardMemberPhoto,
   insertMembers,
+  insertRelations,
   joinFamilyGroup,
   loadFamily,
+  replaceMemberRelations,
   signOut as endSession,
   storeMemberPhoto,
   updateStoredMember,
@@ -22,17 +26,19 @@ import {
 import { friendlySupabaseMessage } from "../supabase/messages";
 import { ensureMemberIds } from "../supabase/rows";
 import { familyReducer } from "./familyReducer";
-import type { FamilyState, FamilyUser, Member, MemberDraft, MemberPatch } from "../types";
+import type { FamilyState, FamilyUser, Member, MemberDraft, MemberLinkInput, MemberPatch } from "../types";
 
 export interface FamilyContextValue {
   group: FamilyState["group"];
   people: FamilyUser[];
   currentUser: FamilyUser;
   members: Member[];
+  relations: FamilyState["relations"];
   getMember: (id: string) => Member | undefined;
-  addMember: (draft: MemberDraft, photo?: File | null) => Promise<Member>;
+  addMember: (draft: MemberDraft, photo?: File | null, links?: readonly MemberLinkInput[]) => Promise<Member>;
   importMembers: (drafts: readonly MemberDraft[]) => Promise<Member[]>;
-  updateMember: (id: string, patch: MemberPatch, photo?: MemberPhotoSelection) => Promise<void>;
+  addSampleHousehold: () => Promise<void>;
+  updateMember: (id: string, patch: MemberPatch, photo?: MemberPhotoSelection, links?: readonly MemberLinkInput[]) => Promise<void>;
   removeMember: (id: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -127,6 +133,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "members" }, reload)
       .on("postgres_changes", { event: "*", schema: "public", table: "addresses" }, reload)
       .on("postgres_changes", { event: "*", schema: "public", table: "family_users" }, reload)
+      .on("postgres_changes", { event: "*", schema: "public", table: "member_relations" }, reload)
       .subscribe();
     return () => {
       window.removeEventListener("focus", reload);
@@ -145,19 +152,22 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
       people: state.people,
       currentUser,
       members: state.members,
+      relations: state.relations,
       getMember(id) {
         return state.members.find((member) => member.id === id);
       },
-      async addMember(draft, photo) {
+      async addMember(draft, photo, links = []) {
         const created = ensureMemberIds(createMember(state.group.id, draft));
         const member = photo ? await memberWithPhoto(created, photo) : created;
+        const relations = applyMemberLinks(state.relations, state.group.id, member.id, links);
         try {
           await insertMembers([member]);
+          await replaceMemberRelations(member.id, relations);
         } catch (error) {
           if (member.photoPath) await discardMemberPhoto(member.photoPath).catch(() => undefined);
           throw error;
         }
-        setState(familyReducer(state, { type: "add", member }));
+        setState({ ...familyReducer(state, { type: "add", member }), relations });
         return member;
       },
       async importMembers(drafts) {
@@ -166,7 +176,21 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
         setState(familyReducer(state, { type: "import", members }));
         return members;
       },
-      async updateMember(id, patch, photo) {
+      async addSampleHousehold() {
+        const members = sampleMemberDrafts().map((draft) => ensureMemberIds(createMember(state.group.id, draft)));
+        const byName = new Map(members.map((member) => [member.fullName, member.id]));
+        const relations = harperLinkPlan().flatMap((link) => {
+          const from = byName.get(link.fromName);
+          const to = byName.get(link.toName);
+          if (!from || !to) return [];
+          const relation = makeRelation(state.group.id, from, to, link.kind);
+          return relation ? [relation] : [];
+        });
+        await insertMembers(members);
+        await insertRelations(relations);
+        setState({ ...familyReducer(state, { type: "import", members }), relations: [...state.relations, ...relations] });
+      },
+      async updateMember(id, patch, photo, links) {
         const existing = state.members.find((member) => member.id === id);
         if (!existing) return;
         let member = ensureMemberIds(mergeMember(existing, patch, new Date().toISOString()));
@@ -175,11 +199,13 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
         } else if (photo?.remove) {
           member = { ...member, photoPath: null, photoUrl: null };
         }
+        const relations = links ? applyMemberLinks(state.relations, state.group.id, member.id, links) : state.relations;
         await updateStoredMember(member);
+        if (links) await replaceMemberRelations(member.id, relations);
         if (photo?.remove && existing.photoPath && !photo.file) {
           await discardMemberPhoto(existing.photoPath).catch(() => undefined);
         }
-        setState({ ...state, members: state.members.map((item) => (item.id === id ? member : item)) });
+        setState({ ...state, members: state.members.map((item) => (item.id === id ? member : item)), relations });
       },
       async removeMember(id) {
         const existing = state.members.find((member) => member.id === id);

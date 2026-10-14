@@ -4,7 +4,7 @@ import { MemberAvatar } from "./MemberAvatar";
 import { addressBadge, badgeClass, isBirthdaySoon, nextBirthdayLabel } from "./memberDisplay";
 import type { Member } from "../types";
 
-export function MemberCard({ member, to }: { member: Member; to: string }) {
+export function MemberCard({ member, to, relationshipLabel }: { member: Member; to: string; relationshipLabel?: string }) {
   const soon = isBirthdaySoon(member.dateOfBirth);
   const next = nextBirthdayLabel(member.dateOfBirth);
   const badge = addressBadge(member.address);
@@ -25,7 +25,7 @@ export function MemberCard({ member, to }: { member: Member; to: string }) {
                 {member.fullName}
               </Link>
             </h2>
-            <p className="mt-1 text-sm text-stone-500">{member.relationship || "No relationship"}</p>
+            <p className="mt-1 text-sm text-stone-500">{relationshipLabel || member.relationship || "No relationship"}</p>
           </div>
         </div>
         <p className="mt-5 text-sm">{member.dateOfBirth ? formatLongDate(member.dateOfBirth) : "No birthday on file"}</p>

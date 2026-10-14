@@ -23,6 +23,9 @@ export function AppShell() {
               <ShellLink href="/" current={pathname === "/" || pathname.startsWith("/members")}>
                 Directory
               </ShellLink>
+              <ShellLink href="/tree" current={pathname.startsWith("/tree")}>
+                Tree
+              </ShellLink>
               <ShellLink href="/birthdays" current={pathname.startsWith("/birthdays")}>
                 Birthdays
               </ShellLink>

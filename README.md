@@ -12,9 +12,16 @@ npm run dev
 
 Fill `.env` with the project URL and the anon key from Supabase → Project Settings → API. Leave the service role key out of the app.
 
-In the Supabase SQL editor, run `supabase/migrations/20260922120000_family_records_household.sql`, then `supabase/migrations/20261012120000_member_photos.sql`, then `supabase/migrations/20261013120000_app_releases.sql`. The second file adds a private picture for each person. The third lets the phone download a newer APK. Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
+In the Supabase SQL editor, run these files in order:
 
-`npm test` checks the store, directory filters, the member form, pictures, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, the home-screen hint, and the APK update check. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
+- `supabase/migrations/20260922120000_family_records_household.sql`
+- `supabase/migrations/20261012120000_member_photos.sql` adds a private picture for each person
+- `supabase/migrations/20261013120000_member_relations.sql` adds links between people so the family tree can name brothers, nieces, and nephews
+- `supabase/migrations/20261013120000_app_releases.sql` lets the phone download a newer APK
+
+Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
+
+`npm test` checks the store, directory filters, the member form, pictures, relationships, the family tree, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, the home-screen hint, and the APK update check. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
 
 ## Install
 
@@ -60,6 +67,7 @@ src/
   supabase/                      Client, row mapping, and household reads and writes
   directory/                     Cards, table, search, and the member drawer
   birthdays/                     7, 30, and 90 day birthday tracker
+  tree/                          Family tree, one row per generation
   cards/                         Greeting-card addresses, copy, and CSV export
   import/                        Spreadsheet drop, column mapping, and review
   shell/                         Navigation and the 7-day reminder banner
@@ -70,6 +78,6 @@ src/
 supabase/migrations/             Household tables, invite functions, pictures, and row level security
 ```
 
-`/` is the directory. `/birthdays` lists upcoming birthdays and downloads an `.ics` calendar. `/cards` shows verified mailing addresses, with copy and CSV export. `/import` accepts a CSV, XLS, or XLSX file, maps the columns, and adds the rows that pass the check.
+`/` is the directory. `/tree` shows each generation on its own row, with the eldest person on the left. `/birthdays` lists upcoming birthdays and downloads an `.ics` calendar. `/cards` shows verified mailing addresses, with copy and CSV export. `/import` accepts a CSV, XLS, or XLSX file, maps the columns, and adds the rows that pass the check.
 
 Sign in with email and password. Create a household, or join one with its invite code. The code is on the directory header. Editors can read and update people. Imported and new addresses stay unverified until someone marks them for mail. An empty household can add the Harper sample so the birthday and mailing screens have people to show.

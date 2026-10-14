@@ -6,6 +6,7 @@ import { birthdayTiming, parseBirthdayWindow, upcomingBirthdays } from "../lib/b
 import { formatLongDate, formatToday } from "../lib/dates";
 import { downloadFile, fileSlug } from "../lib/download";
 import { MemberAvatar } from "../directory/MemberAvatar";
+import { focusMemberId, relationshipSummary } from "../lib/kinship";
 import { pageClass, secondaryButtonClass, surfaceClass } from "../directory/styles";
 import { useFamily } from "../store/FamilyProvider";
 import type { BirthdayWindow } from "../types";
@@ -13,7 +14,9 @@ import type { BirthdayWindow } from "../types";
 const windows: BirthdayWindow[] = [7, 30, 90];
 
 export function BirthdaysPage() {
-  const { group, members } = useFamily();
+  const { group, members, relations, currentUser } = useFamily();
+  const focusId = focusMemberId(members, currentUser.id);
+  const people = members.map((member) => ({ id: member.id, fullName: member.fullName, gender: member.gender }));
   const [searchParams, setSearchParams] = useSearchParams();
   const within = parseBirthdayWindow(searchParams.get("within"));
   const upcoming = upcomingBirthdays(members, within);
@@ -83,6 +86,9 @@ export function BirthdaysPage() {
           {upcoming.map((item) => {
             const soon = item.daysUntil <= 7;
             const person = members.find((member) => member.id === item.memberId);
+            const relation = person
+              ? relationshipSummary({ id: person.id, fullName: person.fullName, gender: person.gender }, people, relations, focusId, person.relationship)
+              : item.relationship;
             return (
               <li key={item.memberId}>
                 <Link
@@ -96,7 +102,7 @@ export function BirthdaysPage() {
                     <span>
                     <span className="block font-display text-2xl font-bold tracking-tight">{item.fullName}</span>
                     <span className="mt-1 block text-sm text-stone-500">
-                      {item.relationship || "Family"} · Turns {item.turningAge}
+                      {relation || "Family"} · Turns {item.turningAge}
                     </span>
                     </span>
                   </span>

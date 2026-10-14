@@ -2,6 +2,7 @@ import { ImagePlus } from "lucide-react";
 import { useEffect, useId, useRef, useState, type FormEvent, type Ref } from "react";
 import { photoProblem, type MemberPhotoSelection } from "../lib/memberPhoto";
 import { SUGGESTED_RELATIONSHIPS } from "../types";
+import { FamilyLinksField } from "./FamilyLinksField";
 import { MemberAvatar } from "./MemberAvatar";
 import { nextBirthdayLabel } from "./memberDisplay";
 import {
@@ -15,7 +16,7 @@ import {
 import { lookupEircode } from "../lib/eircode";
 import { EircodeHint } from "./EircodeHint";
 import { inputClass, labelClass, secondaryButtonClass } from "./styles";
-import type { MemberDraft } from "../types";
+import type { MemberDraft, MemberLinkInput } from "../types";
 
 export function MemberForm({
   initial,
@@ -23,6 +24,7 @@ export function MemberForm({
   suggestions,
   photoUrl = null,
   hasPhoto = false,
+  people = [],
   onSave,
   onDirtyChange,
 }: {
@@ -31,7 +33,8 @@ export function MemberForm({
   suggestions: readonly string[];
   photoUrl?: string | null;
   hasPhoto?: boolean;
-  onSave: (draft: MemberDraft, photo: MemberPhotoSelection) => void;
+  people?: readonly { id: string; fullName: string }[];
+  onSave: (draft: MemberDraft, photo: MemberPhotoSelection, links: MemberLinkInput[]) => void;
   onDirtyChange: (dirty: boolean) => void;
 }) {
   const [values, setValues] = useState(initial);
@@ -85,7 +88,7 @@ export function MemberForm({
     else if (nextErrors.dateOfBirth) dateRef.current?.focus();
     else if (nextErrors.email) emailRef.current?.focus();
     if (hasFormErrors(nextErrors)) return;
-    onSave(formValuesToDraft(values, addressId), { file: photoFile, remove: photoRemoved && !photoFile });
+    onSave(formValuesToDraft(values, addressId), { file: photoFile, remove: photoRemoved && !photoFile }, values.links);
   }
 
   function choosePhoto(file: File) {
@@ -164,11 +167,33 @@ export function MemberForm({
           onChange={(value) => update("lastName", value)}
         />
       </div>
+      <div>
+        <label htmlFor={`${baseId}-gender`} className={labelClass}>
+          Gender
+        </label>
+        <select
+          id={`${baseId}-gender`}
+          className={inputClass}
+          value={values.gender}
+          onChange={(event) => update("gender", event.target.value === "female" || event.target.value === "male" ? event.target.value : "")}
+        >
+          <option value="">Not specified</option>
+          <option value="female">Woman</option>
+          <option value="male">Man</option>
+        </select>
+        <p className="mt-1 text-sm text-stone-500">Used for brother or sister, and niece or nephew.</p>
+      </div>
+      <FamilyLinksField
+        links={values.links}
+        people={people}
+        error={errors.links}
+        onChange={(links) => update("links", links)}
+      />
       <TextField
         id={`${baseId}-relationship`}
-        label="Relationship"
+        label="Label"
         list={listId}
-        placeholder="Cousin, parent, neighbor"
+        placeholder="Friend, neighbor"
         value={values.relationship}
         onChange={(value) => update("relationship", value)}
       />
