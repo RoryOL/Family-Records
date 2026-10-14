@@ -204,6 +204,13 @@ export async function replaceMemberRelations(memberId: string, relations: readon
   await insertRelations(relations.filter((relation) => relation.fromMemberId === memberId || relation.toMemberId === memberId));
 }
 
+export async function updateOwnDisplayName(userId: string, displayName: string): Promise<void> {
+  const name = displayName.trim().slice(0, 80);
+  if (!name) return;
+  const { error } = await getSupabase().from("family_users").update({ display_name: name }).eq("user_id", userId);
+  if (error) throw supabaseFailure(error);
+}
+
 export async function deleteStoredMember(id: string): Promise<void> {
   const { error } = await getSupabase().from("members").delete().eq("id", id);
   if (error) throw supabaseFailure(error);

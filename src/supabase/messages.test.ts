@@ -22,5 +22,11 @@ describe("friendlySupabaseMessage", () => {
     expect(friendlySupabaseMessage("Could not find the table 'public.member_relations' in the schema cache")).toBe(
       "Run the family tree migration in the Supabase SQL editor, then try again.",
     );
+    expect(friendlySupabaseMessage('duplicate key value violates unique constraint "members_linked_user_idx"')).toBe(
+      "Your details are already in this household.",
+    );
+    expect(friendlySupabaseMessage("A profile can only be linked to the person who is signed in.")).toBe(
+      "A profile can only be linked to the person who is signed in.",
+    );
   });
 });

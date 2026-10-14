@@ -35,6 +35,12 @@ export function friendlySupabaseMessage(message: string, code?: string): string 
   if (/row-level security/i.test(text)) {
     return "You do not have access to change that.";
   }
+  if (/members_linked_user/i.test(text)) {
+    return "Your details are already in this household.";
+  }
+  if (/already linked to an account|only be linked to the person/i.test(text)) {
+    return text;
+  }
   if (/duplicate key|unique constraint/i.test(text)) {
     return "That record is already in the household.";
   }

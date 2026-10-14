@@ -18,6 +18,7 @@ In the Supabase SQL editor, run these files in order:
 - `supabase/migrations/20261012120000_member_photos.sql` adds a private picture for each person
 - `supabase/migrations/20261013120000_member_relations.sql` adds links between people so the family tree can name brothers, nieces, and nephews
 - `supabase/migrations/20261013120000_app_releases.sql` lets the phone download a newer APK
+- `supabase/migrations/20261014120000_own_profile.sql` links the signed-in account to one person in the household
 
 Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
 
@@ -78,6 +79,6 @@ src/
 supabase/migrations/             Household tables, invite functions, pictures, and row level security
 ```
 
-`/` is the directory. `/tree` shows each generation on its own row, with the eldest person on the left. `/birthdays` lists upcoming birthdays and downloads an `.ics` calendar. `/cards` shows verified mailing addresses, with copy and CSV export. `/import` accepts a CSV, XLS, or XLSX file, maps the columns, and adds the rows that pass the check.
+`/` is the directory. `/me` is where the signed-in person adds their birthdate, address, and relationships. `/tree` shows each generation on its own row, with the eldest person on the left. `/birthdays` lists upcoming birthdays and downloads an `.ics` calendar. `/cards` shows verified mailing addresses, with copy and CSV export. `/import` accepts a CSV, XLS, or XLSX file, maps the columns, and adds the rows that pass the check.
 
 Sign in with email and password. Create a household, or join one with its invite code. The code is on the directory header. Editors can read and update people. Imported and new addresses stay unverified until someone marks them for mail. An empty household can add the Harper sample so the birthday and mailing screens have people to show.
