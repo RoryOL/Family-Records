@@ -18,6 +18,8 @@ export function DirectoryPage() {
   const relationship = searchParams.get("relationship") ?? "";
   const view = parseDirectoryView(searchParams.get("view"));
   const focusId = focusMemberId(members, currentUser.id);
+  const self = focusId ? members.find((member) => member.id === focusId) : undefined;
+  const yourName = self?.fullName || currentUser.displayName;
   const labels = useMemo(() => {
     const people = members.map((member) => ({ id: member.id, fullName: member.fullName, gender: member.gender }));
     return new Map(
@@ -63,7 +65,11 @@ export function DirectoryPage() {
           <h1 className="mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">{group.name}</h1>
           <p className="mt-3 max-w-xl text-stone-500">{group.description}</p>
           <p className="mt-3 text-sm text-stone-500">
-            {currentUser.displayName} · {currentUser.role === "owner" ? "Owner" : "Editor"} · Invite{" "}
+            <Link to="/me" className="underline decoration-amber-300 underline-offset-2">
+              {yourName}
+            </Link>
+            {" · "}
+            {currentUser.role === "owner" ? "Owner" : "Editor"} · Invite{" "}
             <code className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">{group.inviteCode}</code>
           </p>
         </div>
@@ -78,6 +84,18 @@ export function DirectoryPage() {
           </Link>
         </div>
       </header>
+
+      {self ? null : (
+        <div className={`${surfaceClass} mt-8 flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between`}>
+          <div>
+            <h2 className="font-display text-2xl font-bold tracking-tight">Your details</h2>
+            <p className="mt-1 max-w-xl text-sm text-stone-500">Add your birthdate, address, and relationships. Birthdays and the family tree then include you.</p>
+          </div>
+          <Link to="/me" className={primaryButtonClass}>
+            Add your details
+          </Link>
+        </div>
+      )}
 
       <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-end">
         <div className="min-w-0 flex-1">

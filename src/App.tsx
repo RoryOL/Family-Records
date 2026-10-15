@@ -4,6 +4,7 @@ import { BirthdaysPage } from "./birthdays/BirthdaysPage";
 import { ImportPage } from "./import/ImportPage";
 import { CardsPage } from "./cards/CardsPage";
 import { DirectoryPage } from "./directory/DirectoryPage";
+import { OwnDetailsPage } from "./directory/OwnDetailsPage";
 import { MemberDrawer } from "./directory/MemberDrawer";
 import { NotFound } from "./directory/NotFound";
 import { AppShell } from "./shell/AppShell";
@@ -22,6 +23,7 @@ export default function App() {
                 <Route path="members/new" element={<MemberDrawer intent="create" />} />
                 <Route path="members/:memberId" element={<MemberDrawer intent="existing" />} />
               </Route>
+              <Route path="/me" element={<OwnDetailsPage />} />
               <Route path="/tree" element={<FamilyTreePage />} />
               <Route path="/birthdays" element={<BirthdaysPage />} />
               <Route path="/cards" element={<CardsPage />} />

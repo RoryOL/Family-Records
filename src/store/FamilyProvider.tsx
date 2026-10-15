@@ -20,6 +20,7 @@ import {
   loadFamily,
   replaceMemberRelations,
   signOut as endSession,
+  updateOwnDisplayName,
   storeMemberPhoto,
   updateStoredMember,
 } from "../supabase/familyApi";
@@ -39,6 +40,7 @@ export interface FamilyContextValue {
   importMembers: (drafts: readonly MemberDraft[]) => Promise<Member[]>;
   addSampleHousehold: () => Promise<void>;
   updateMember: (id: string, patch: MemberPatch, photo?: MemberPhotoSelection, links?: readonly MemberLinkInput[]) => Promise<void>;
+  saveOwnDetails: (draft: MemberDraft, photo?: MemberPhotoSelection, links?: readonly MemberLinkInput[]) => Promise<Member>;
   removeMember: (id: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -207,6 +209,50 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
         }
         setState({ ...state, members: state.members.map((item) => (item.id === id ? member : item)), relations });
       },
+      async saveOwnDetails(draft, photo, links = []) {
+        const existing = state.members.find((member) => member.linkedUserId === state.currentUserId);
+        const labeled = existing ? draft : { ...draft, relationship: draft.relationship.trim() || "Self" };
+        if (!existing) {
+          let member: Member = { ...ensureMemberIds(createMember(state.group.id, labeled)), linkedUserId: state.currentUserId };
+          if (photo?.file) member = await memberWithPhoto(member, photo.file);
+          const relations = applyMemberLinks(state.relations, state.group.id, member.id, links);
+          try {
+            await insertMembers([member]);
+            await replaceMemberRelations(member.id, relations);
+          } catch (error) {
+            if (member.photoPath) await discardMemberPhoto(member.photoPath).catch(() => undefined);
+            throw error;
+          }
+          await rememberDisplayName(state.currentUserId, member.fullName);
+          setState({
+            ...familyReducer(state, { type: "add", member }),
+            relations,
+            people: namedPeople(state.people, state.currentUserId, member.fullName),
+          });
+          return member;
+        }
+
+        let member = ensureMemberIds(mergeMember(existing, labeled, new Date().toISOString()));
+        if (photo?.file) {
+          member = await memberWithPhoto(member, photo.file);
+        } else if (photo?.remove) {
+          member = { ...member, photoPath: null, photoUrl: null };
+        }
+        const relations = applyMemberLinks(state.relations, state.group.id, member.id, links);
+        await updateStoredMember(member);
+        await replaceMemberRelations(member.id, relations);
+        if (photo?.remove && existing.photoPath && !photo.file) {
+          await discardMemberPhoto(existing.photoPath).catch(() => undefined);
+        }
+        await rememberDisplayName(state.currentUserId, member.fullName);
+        setState({
+          ...state,
+          members: state.members.map((item) => (item.id === existing.id ? member : item)),
+          relations,
+          people: namedPeople(state.people, state.currentUserId, member.fullName),
+        });
+        return member;
+      },
       async removeMember(id) {
         const existing = state.members.find((member) => member.id === id);
         await deleteStoredMember(id);
@@ -262,6 +308,14 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
   if (!value) return <GateFrame title="Family Records" lede="Opening your household…" />;
 
   return <FamilyContext.Provider value={value}>{children}</FamilyContext.Provider>;
+}
+
+function namedPeople(people: FamilyUser[], userId: string, displayName: string): FamilyUser[] {
+  return people.map((person) => (person.id === userId ? { ...person, displayName } : person));
+}
+
+async function rememberDisplayName(userId: string, displayName: string): Promise<void> {
+  await updateOwnDisplayName(userId, displayName).catch(() => undefined);
 }
 
 async function memberWithPhoto(member: Member, file: File): Promise<Member> {

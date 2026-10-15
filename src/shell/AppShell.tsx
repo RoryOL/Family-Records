@@ -20,6 +20,9 @@ export function AppShell() {
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <nav aria-label="Primary" className="flex flex-wrap gap-2">
+              <ShellLink href="/me" current={pathname.startsWith("/me")}>
+                You
+              </ShellLink>
               <ShellLink href="/" current={pathname === "/" || pathname.startsWith("/members")}>
                 Directory
               </ShellLink>
