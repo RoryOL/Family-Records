@@ -31,8 +31,9 @@ function celebrationDate(year: number, month: number, day: number): Date {
   return new Date(year, month - 1, Math.min(day, maxDay));
 }
 
-export function nextBirthday(dateOfBirth: string, today = new Date()): NextBirthday | null {
-  const parsed = parseIsoDate(dateOfBirth);
+/** Next yearly occurrence of a calendar date, and how many years it marks. */
+export function nextAnnual(isoDate: string, today = new Date()): { nextOccurrence: string; daysUntil: number; years: number } | null {
+  const parsed = parseIsoDate(isoDate);
   if (!parsed) return null;
 
   const startToday = startOfDay(today);
@@ -47,8 +48,14 @@ export function nextBirthday(dateOfBirth: string, today = new Date()): NextBirth
   return {
     nextOccurrence: toIsoDate(next),
     daysUntil,
-    turningAge: next.getFullYear() - parsed.year,
+    years: next.getFullYear() - parsed.year,
   };
+}
+
+export function nextBirthday(dateOfBirth: string, today = new Date()): NextBirthday | null {
+  const next = nextAnnual(dateOfBirth, today);
+  if (!next) return null;
+  return { nextOccurrence: next.nextOccurrence, daysUntil: next.daysUntil, turningAge: next.years };
 }
 
 export function upcomingBirthdays(

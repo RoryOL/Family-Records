@@ -1,4 +1,5 @@
 import { createInitialState } from "../data/mockFamily";
+import { detachGodparent } from "../lib/godparents";
 import { mergeMember } from "../lib/members";
 import type { FamilyState, Member, MemberPatch } from "../types";
 
@@ -32,6 +33,7 @@ export function familyReducer(state: FamilyState, action: FamilyAction): FamilyS
         ...state,
         members,
         relations: state.relations.filter((relation) => relation.fromMemberId !== action.id && relation.toMemberId !== action.id),
+        godparents: detachGodparent(state.godparents, action.id),
       };
     }
     case "reset":

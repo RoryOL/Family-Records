@@ -91,12 +91,25 @@ export interface MemberRelation {
   fromMemberId: string;
   toMemberId: string;
   kind: RelationKind;
+  /** Set only on a partner link. */
+  weddingDate: IsoDate | null;
 }
 
 /** One row in the member form: this person is the parent, child, sibling, or partner of someone else. */
 export interface MemberLinkInput {
   otherId: string;
   role: LinkRole;
+  weddingDate?: string;
+}
+
+/** One of the two godparent places on a person. A household member, or a name for someone who is not listed. */
+export interface Godparent {
+  id: string;
+  familyGroupId: string;
+  memberId: string;
+  slot: 1 | 2;
+  godparentMemberId: string | null;
+  godparentName: string;
 }
 
 export interface FamilyGroup {
@@ -123,6 +136,7 @@ export interface FamilyState {
   currentUserId: string;
   members: Member[];
   relations: MemberRelation[];
+  godparents: Godparent[];
 }
 
 export type BirthdayWindow = 7 | 30 | 90;

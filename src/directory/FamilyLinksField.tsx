@@ -41,7 +41,10 @@ export function FamilyLinksField({
               aria-label={`Relationship ${index + 1}`}
               className={`${inputClass} mt-0 w-auto`}
               value={link.role}
-              onChange={(event) => update(index, { role: event.target.value as LinkRole })}
+              onChange={(event) => {
+                const role = event.target.value as LinkRole;
+                update(index, { role, weddingDate: role === "spouse" ? link.weddingDate : "" });
+              }}
             >
               {roles.map((role) => (
                 <option key={role.value} value={role.value}>
@@ -70,6 +73,18 @@ export function FamilyLinksField({
             >
               Remove
             </button>
+            {link.role === "spouse" ? (
+              <label className="grid basis-full gap-1 text-sm sm:max-w-xs">
+                Wedding date
+                <input
+                  aria-label={`Wedding date ${index + 1}`}
+                  type="date"
+                  className={`${inputClass} mt-0`}
+                  value={link.weddingDate ?? ""}
+                  onChange={(event) => update(index, { weddingDate: event.target.value })}
+                />
+              </label>
+            ) : null}
           </div>
         ))
       )}

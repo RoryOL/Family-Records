@@ -26,6 +26,9 @@ export function friendlySupabaseMessage(message: string, code?: string): string 
   if (/sign in before/i.test(text)) {
     return text;
   }
+  if (/wedding_date|godparents/i.test(text)) {
+    return "Run the weddings and godparents migration in the Supabase SQL editor, then try again.";
+  }
   if (/member_relations|column .*gender|schema cache/i.test(text) && /relation|gender|member_relations/i.test(text)) {
     return "Run the family tree migration in the Supabase SQL editor, then try again.";
   }

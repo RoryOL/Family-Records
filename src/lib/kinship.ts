@@ -1,3 +1,4 @@
+import { parseIsoDate } from "./dates";
 import type { Gender, MemberLinkInput, MemberRelation, RelationKind } from "../types";
 
 export interface KinshipPerson {
@@ -29,6 +30,9 @@ export function linkProblem(links: readonly MemberLinkInput[]): string | null {
     const key = `${link.role}:${link.otherId}`;
     if (seen.has(key)) return "That relationship is already listed.";
     seen.add(key);
+    if (link.role === "spouse" && link.weddingDate?.trim() && !parseIsoDate(link.weddingDate.trim())) {
+      return "Enter a real wedding date.";
+    }
   }
   for (const link of links) {
     if (link.role === "parent" && links.some((other) => other.otherId === link.otherId && other.role === "child")) {
@@ -45,10 +49,13 @@ export function linksTouching(memberId: string, relations: readonly MemberRelati
       links.push({ otherId: relation.toMemberId, role: "parent" });
     } else if (relation.kind === "parent" && relation.toMemberId === memberId) {
       links.push({ otherId: relation.fromMemberId, role: "child" });
-    } else if ((relation.kind === "spouse" || relation.kind === "sibling") && relation.fromMemberId === memberId) {
-      links.push({ otherId: relation.toMemberId, role: relation.kind });
-    } else if ((relation.kind === "spouse" || relation.kind === "sibling") && relation.toMemberId === memberId) {
-      links.push({ otherId: relation.fromMemberId, role: relation.kind });
+    } else if (relation.kind === "spouse" && (relation.fromMemberId === memberId || relation.toMemberId === memberId)) {
+      const otherId = relation.fromMemberId === memberId ? relation.toMemberId : relation.fromMemberId;
+      links.push({ otherId, role: "spouse", weddingDate: relation.weddingDate ?? "" });
+    } else if (relation.kind === "sibling" && relation.fromMemberId === memberId) {
+      links.push({ otherId: relation.toMemberId, role: "sibling" });
+    } else if (relation.kind === "sibling" && relation.toMemberId === memberId) {
+      links.push({ otherId: relation.fromMemberId, role: "sibling" });
     }
   }
   return links;
@@ -73,31 +80,41 @@ export function relationFromLink(familyGroupId: string, memberId: string, link: 
   if (!link.otherId || link.otherId === memberId) return null;
   if (link.role === "parent") return makeRelation(familyGroupId, memberId, link.otherId, "parent");
   if (link.role === "child") return makeRelation(familyGroupId, link.otherId, memberId, "parent");
-  return makeRelation(familyGroupId, memberId, link.otherId, link.role);
+  return makeRelation(familyGroupId, memberId, link.otherId, link.role, link.weddingDate);
 }
 
-export function makeRelation(familyGroupId: string, fromMemberId: string, toMemberId: string, kind: RelationKind): MemberRelation | null {
+export function makeRelation(
+  familyGroupId: string,
+  fromMemberId: string,
+  toMemberId: string,
+  kind: RelationKind,
+  weddingDate: string | null = null,
+): MemberRelation | null {
   if (fromMemberId === toMemberId) return null;
   const [from, to] = kind === "parent" || fromMemberId < toMemberId ? [fromMemberId, toMemberId] : [toMemberId, fromMemberId];
+  const date = kind === "spouse" && weddingDate && parseIsoDate(weddingDate.trim()) ? weddingDate.trim() : null;
   return {
     id: globalThis.crypto?.randomUUID?.() ?? `rel_${from}_${to}_${kind}`,
     familyGroupId,
     fromMemberId: from,
     toMemberId: to,
     kind,
+    weddingDate: date,
   };
 }
 
 export function dedupeRelations(relations: readonly MemberRelation[]): MemberRelation[] {
-  const seen = new Set<string>();
-  const result: MemberRelation[] = [];
+  const seen = new Map<string, MemberRelation>();
   for (const relation of relations) {
     const key = `${relation.kind}:${relation.fromMemberId}:${relation.toMemberId}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    result.push(relation);
+    const existing = seen.get(key);
+    if (!existing) {
+      seen.set(key, relation);
+      continue;
+    }
+    if (!existing.weddingDate && relation.weddingDate) seen.set(key, relation);
   }
-  return result;
+  return [...seen.values()];
 }
 
 /**

@@ -1,7 +1,8 @@
 import { parseIsoDate } from "../lib/dates";
+import { emptyGodparentSlots, godparentProblem, slotsFromGodparents, type GodparentSlot } from "../lib/godparents";
 import { linkProblem } from "../lib/kinship";
 import { fullNameFrom } from "../lib/members";
-import type { AddressFormat, AddressInput, Gender, Member, MemberDraft, MemberLinkInput } from "../types";
+import type { AddressFormat, AddressInput, Gender, Godparent, Member, MemberDraft, MemberLinkInput } from "../types";
 
 export interface MemberFormValues {
   firstName: string;
@@ -9,6 +10,7 @@ export interface MemberFormValues {
   relationship: string;
   gender: "" | Gender;
   links: MemberLinkInput[];
+  godparents: [GodparentSlot, GodparentSlot];
   dateOfBirth: string;
   phone: string;
   email: string;
@@ -29,6 +31,7 @@ export interface MemberFormErrors {
   dateOfBirth?: string;
   email?: string;
   links?: string;
+  godparents?: string;
 }
 
 export function emptyFormValues(): MemberFormValues {
@@ -38,6 +41,7 @@ export function emptyFormValues(): MemberFormValues {
     relationship: "",
     gender: "",
     links: [],
+    godparents: emptyGodparentSlots(),
     dateOfBirth: "",
     phone: "",
     email: "",
@@ -54,13 +58,14 @@ export function emptyFormValues(): MemberFormValues {
   };
 }
 
-export function memberToFormValues(member: Member, links: readonly MemberLinkInput[] = []): MemberFormValues {
+export function memberToFormValues(member: Member, links: readonly MemberLinkInput[] = [], godparents: readonly Godparent[] = []): MemberFormValues {
   return {
     firstName: member.firstName,
     lastName: member.lastName,
     relationship: member.relationship,
     gender: member.gender ?? "",
     links: links.map((link) => ({ ...link })),
+    godparents: slotsFromGodparents(member.id, godparents),
     dateOfBirth: member.dateOfBirth ?? "",
     phone: member.phone ?? "",
     email: member.email ?? "",
@@ -77,7 +82,7 @@ export function memberToFormValues(member: Member, links: readonly MemberLinkInp
   };
 }
 
-export function validateMemberForm(values: MemberFormValues): MemberFormErrors {
+export function validateMemberForm(values: MemberFormValues, selfId?: string): MemberFormErrors {
   const errors: MemberFormErrors = {};
   if (!values.firstName.trim()) errors.firstName = "Enter a first name.";
 
@@ -91,6 +96,9 @@ export function validateMemberForm(values: MemberFormValues): MemberFormErrors {
 
   const links = linkProblem(values.links);
   if (links) errors.links = links;
+
+  const godparents = godparentProblem(values.godparents, selfId);
+  if (godparents) errors.godparents = godparents;
 
   return errors;
 }
