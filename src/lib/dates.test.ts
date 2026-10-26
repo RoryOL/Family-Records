@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseIsoDate, toIsoDate } from "./dates";
+import { isYoungerThan, parseIsoDate, toIsoDate } from "./dates";
 
 describe("parseIsoDate", () => {
   it("accepts a real calendar date", () => {
@@ -11,6 +11,17 @@ describe("parseIsoDate", () => {
     expect(parseIsoDate("2020-13-01")).toBeNull();
     expect(parseIsoDate("2020-00-10")).toBeNull();
     expect(parseIsoDate("03/14/2001")).toBeNull();
+  });
+});
+
+describe("isYoungerThan", () => {
+  it("compares calendar days and ignores a missing date", () => {
+    expect(isYoungerThan("2015-01-02", "2000-06-01")).toBe(true);
+    expect(isYoungerThan("2000-01-01", "2000-01-01")).toBe(false);
+    expect(isYoungerThan("1990-01-01", "2000-01-01")).toBe(false);
+    expect(isYoungerThan(null, "2000-01-01")).toBe(false);
+    expect(isYoungerThan("2015-01-01", "")).toBe(false);
+    expect(isYoungerThan("2015-02-31", "2000-01-01")).toBe(false);
   });
 });
 

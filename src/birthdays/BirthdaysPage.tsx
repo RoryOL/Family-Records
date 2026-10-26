@@ -183,7 +183,7 @@ export function BirthdaysPage() {
 function anniversaryEvents(members: readonly Member[], relations: readonly MemberRelation[]): CalendarEvent[] {
   const byId = new Map(members.map((member) => [member.id, member.fullName]));
   return relations.flatMap((relation) => {
-    if (relation.kind !== "spouse" || !relation.weddingDate) return [];
+    if (relation.kind !== "married" || !relation.weddingDate) return [];
     const left = byId.get(relation.fromMemberId);
     const right = byId.get(relation.toMemberId);
     if (!left || !right) return [];

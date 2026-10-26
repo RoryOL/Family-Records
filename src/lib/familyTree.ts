@@ -304,5 +304,7 @@ function connectedComponents(
 
 function hasLink(id: string, parentsOf: Map<string, string[]>, spousesOf: Map<string, string[]>, relations: readonly MemberRelation[]): boolean {
   if ((parentsOf.get(id) ?? []).length > 0 || (spousesOf.get(id) ?? []).length > 0) return true;
-  return relations.some((relation) => relation.kind !== "spouse" && (relation.fromMemberId === id || relation.toMemberId === id));
+  return relations.some(
+    (relation) => relation.kind !== "spouse" && relation.kind !== "married" && (relation.fromMemberId === id || relation.toMemberId === id),
+  );
 }
