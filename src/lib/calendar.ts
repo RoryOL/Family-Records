@@ -15,8 +15,15 @@ function formatUtcStamp(date: Date): string {
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
 }
 
+export interface CalendarEvent {
+  id: string;
+  date: string;
+  summary: string;
+  description: string;
+}
+
 /** A yearly all-day calendar of family birthdays, using CRLF line endings. */
-export function birthdayCalendar(members: readonly Member[], calendarName: string, now = new Date()): string {
+export function birthdayCalendar(members: readonly Member[], calendarName: string, now = new Date(), extra: readonly CalendarEvent[] = []): string {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -37,6 +44,20 @@ export function birthdayCalendar(members: readonly Member[], calendarName: strin
       "RRULE:FREQ=YEARLY",
       `SUMMARY:${icsEscape(summary)}`,
       `DESCRIPTION:${icsEscape(`${member.fullName} (${relationship})`)}`,
+      "END:VEVENT",
+    );
+  }
+
+  for (const event of extra) {
+    if (!parseIsoDate(event.date)) continue;
+    lines.push(
+      "BEGIN:VEVENT",
+      `UID:${icsEscape(event.id)}@familyrecords`,
+      `DTSTAMP:${formatUtcStamp(now)}`,
+      `DTSTART;VALUE=DATE:${event.date.replaceAll("-", "")}`,
+      "RRULE:FREQ=YEARLY",
+      `SUMMARY:${icsEscape(event.summary)}`,
+      `DESCRIPTION:${icsEscape(event.description)}`,
       "END:VEVENT",
     );
   }

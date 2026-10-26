@@ -6,6 +6,7 @@ import { primaryButtonClass } from "../directory/styles";
 import { HouseholdPage } from "../auth/HouseholdPage";
 import { SetupPage } from "../auth/SetupPage";
 import { harperLinkPlan, sampleMemberDrafts } from "../data/mockFamily";
+import { godparentsFromSlots, replaceGodparentRows, type GodparentSlot } from "../lib/godparents";
 import { applyMemberLinks, makeRelation } from "../lib/kinship";
 import type { MemberPhotoSelection } from "../lib/memberPhoto";
 import { createMember, mergeMember } from "../lib/members";
@@ -18,6 +19,7 @@ import {
   insertRelations,
   joinFamilyGroup,
   loadFamily,
+  replaceMemberGodparents,
   replaceMemberRelations,
   signOut as endSession,
   updateOwnDisplayName,
@@ -35,12 +37,13 @@ export interface FamilyContextValue {
   currentUser: FamilyUser;
   members: Member[];
   relations: FamilyState["relations"];
+  godparents: FamilyState["godparents"];
   getMember: (id: string) => Member | undefined;
-  addMember: (draft: MemberDraft, photo?: File | null, links?: readonly MemberLinkInput[]) => Promise<Member>;
+  addMember: (draft: MemberDraft, photo?: File | null, links?: readonly MemberLinkInput[], godparents?: readonly GodparentSlot[]) => Promise<Member>;
   importMembers: (drafts: readonly MemberDraft[]) => Promise<Member[]>;
   addSampleHousehold: () => Promise<void>;
-  updateMember: (id: string, patch: MemberPatch, photo?: MemberPhotoSelection, links?: readonly MemberLinkInput[]) => Promise<void>;
-  saveOwnDetails: (draft: MemberDraft, photo?: MemberPhotoSelection, links?: readonly MemberLinkInput[]) => Promise<Member>;
+  updateMember: (id: string, patch: MemberPatch, photo?: MemberPhotoSelection, links?: readonly MemberLinkInput[], godparents?: readonly GodparentSlot[]) => Promise<void>;
+  saveOwnDetails: (draft: MemberDraft, photo?: MemberPhotoSelection, links?: readonly MemberLinkInput[], godparents?: readonly GodparentSlot[]) => Promise<Member>;
   removeMember: (id: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -136,6 +139,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "addresses" }, reload)
       .on("postgres_changes", { event: "*", schema: "public", table: "family_users" }, reload)
       .on("postgres_changes", { event: "*", schema: "public", table: "member_relations" }, reload)
+      .on("postgres_changes", { event: "*", schema: "public", table: "godparents" }, reload)
       .subscribe();
     return () => {
       window.removeEventListener("focus", reload);
@@ -155,21 +159,25 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
       currentUser,
       members: state.members,
       relations: state.relations,
+      godparents: state.godparents,
       getMember(id) {
         return state.members.find((member) => member.id === id);
       },
-      async addMember(draft, photo, links = []) {
+      async addMember(draft, photo, links = [], godparentSlots = []) {
         const created = ensureMemberIds(createMember(state.group.id, draft));
         const member = photo ? await memberWithPhoto(created, photo) : created;
         const relations = applyMemberLinks(state.relations, state.group.id, member.id, links);
+        const addedGodparents = godparentsFromSlots(state.group.id, member.id, godparentSlots, state.members);
         try {
           await insertMembers([member]);
           await replaceMemberRelations(member.id, relations);
+          await replaceMemberGodparents(member.id, addedGodparents);
         } catch (error) {
           if (member.photoPath) await discardMemberPhoto(member.photoPath).catch(() => undefined);
           throw error;
         }
-        setState({ ...familyReducer(state, { type: "add", member }), relations });
+        const godparents = replaceGodparentRows(state.godparents, member.id, addedGodparents);
+        setState({ ...familyReducer(state, { type: "add", member }), relations, godparents });
         return member;
       },
       async importMembers(drafts) {
@@ -185,14 +193,27 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
           const from = byName.get(link.fromName);
           const to = byName.get(link.toName);
           if (!from || !to) return [];
-          const relation = makeRelation(state.group.id, from, to, link.kind);
+          const relation = makeRelation(state.group.id, from, to, link.kind, link.weddingDate ?? null);
           return relation ? [relation] : [];
         });
+        const people = members.map((member) => ({ id: member.id, fullName: member.fullName }));
+        const jonahId = byName.get("Jonah Harper") ?? "";
+        const willaId = byName.get("Willa Harper") ?? "";
+        const sampleGodparents = [
+          ...godparentsFromSlots(state.group.id, jonahId, [{ choice: byName.get("Ruth Ellison") ?? "", name: "" }, { choice: "", name: "" }], people),
+          ...godparentsFromSlots(state.group.id, willaId, [{ choice: "name", name: "Patrick Murphy" }, { choice: "", name: "" }], people),
+        ].filter((row) => row.memberId);
         await insertMembers(members);
         await insertRelations(relations);
-        setState({ ...familyReducer(state, { type: "import", members }), relations: [...state.relations, ...relations] });
+        if (jonahId) await replaceMemberGodparents(jonahId, sampleGodparents.filter((row) => row.memberId === jonahId));
+        if (willaId) await replaceMemberGodparents(willaId, sampleGodparents.filter((row) => row.memberId === willaId));
+        setState({
+          ...familyReducer(state, { type: "import", members }),
+          relations: [...state.relations, ...relations],
+          godparents: [...state.godparents, ...sampleGodparents],
+        });
       },
-      async updateMember(id, patch, photo, links) {
+      async updateMember(id, patch, photo, links, godparentSlots) {
         const existing = state.members.find((member) => member.id === id);
         if (!existing) return;
         let member = ensureMemberIds(mergeMember(existing, patch, new Date().toISOString()));
@@ -202,23 +223,29 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
           member = { ...member, photoPath: null, photoUrl: null };
         }
         const relations = links ? applyMemberLinks(state.relations, state.group.id, member.id, links) : state.relations;
+        const godparents = godparentSlots
+          ? replaceGodparentRows(state.godparents, member.id, godparentsFromSlots(state.group.id, member.id, godparentSlots, state.members))
+          : state.godparents;
         await updateStoredMember(member);
         if (links) await replaceMemberRelations(member.id, relations);
+        if (godparentSlots) await replaceMemberGodparents(member.id, godparents.filter((row) => row.memberId === member.id));
         if (photo?.remove && existing.photoPath && !photo.file) {
           await discardMemberPhoto(existing.photoPath).catch(() => undefined);
         }
-        setState({ ...state, members: state.members.map((item) => (item.id === id ? member : item)), relations });
+        setState({ ...state, members: state.members.map((item) => (item.id === id ? member : item)), relations, godparents });
       },
-      async saveOwnDetails(draft, photo, links = []) {
+      async saveOwnDetails(draft, photo, links = [], godparentSlots = []) {
         const existing = state.members.find((member) => member.linkedUserId === state.currentUserId);
         const labeled = existing ? draft : { ...draft, relationship: draft.relationship.trim() || "Self" };
         if (!existing) {
           let member: Member = { ...ensureMemberIds(createMember(state.group.id, labeled)), linkedUserId: state.currentUserId };
           if (photo?.file) member = await memberWithPhoto(member, photo.file);
           const relations = applyMemberLinks(state.relations, state.group.id, member.id, links);
+          const ownGodparents = godparentsFromSlots(state.group.id, member.id, godparentSlots, state.members);
           try {
             await insertMembers([member]);
             await replaceMemberRelations(member.id, relations);
+            await replaceMemberGodparents(member.id, ownGodparents);
           } catch (error) {
             if (member.photoPath) await discardMemberPhoto(member.photoPath).catch(() => undefined);
             throw error;
@@ -227,6 +254,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
           setState({
             ...familyReducer(state, { type: "add", member }),
             relations,
+            godparents: replaceGodparentRows(state.godparents, member.id, ownGodparents),
             people: namedPeople(state.people, state.currentUserId, member.fullName),
           });
           return member;
@@ -239,8 +267,10 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
           member = { ...member, photoPath: null, photoUrl: null };
         }
         const relations = applyMemberLinks(state.relations, state.group.id, member.id, links);
+        const ownGodparents = godparentsFromSlots(state.group.id, member.id, godparentSlots, state.members);
         await updateStoredMember(member);
         await replaceMemberRelations(member.id, relations);
+        await replaceMemberGodparents(member.id, ownGodparents);
         if (photo?.remove && existing.photoPath && !photo.file) {
           await discardMemberPhoto(existing.photoPath).catch(() => undefined);
         }
@@ -249,6 +279,7 @@ export function FamilyProvider({ children }: { children: ReactNode }) {
           ...state,
           members: state.members.map((item) => (item.id === existing.id ? member : item)),
           relations,
+          godparents: replaceGodparentRows(state.godparents, member.id, ownGodparents),
           people: namedPeople(state.people, state.currentUserId, member.fullName),
         });
         return member;

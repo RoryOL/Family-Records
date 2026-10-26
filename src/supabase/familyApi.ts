@@ -1,7 +1,7 @@
 import type { Session, User } from "@supabase/supabase-js";
 import { memberPhotoBlob, MEMBER_PHOTO_BUCKET, photoObjectPath, photoProblem, STORED_PHOTO_MAX_BYTES } from "../lib/memberPhoto";
 import { nativeSignUpRedirect } from "../native/authLink";
-import type { FamilyState, Member } from "../types";
+import type { FamilyState, Godparent, Member, MemberRelation } from "../types";
 import { getSupabase } from "./client";
 import { friendlySupabaseMessage } from "./messages";
 import {
@@ -10,15 +10,17 @@ import {
   groupFromRow,
   memberFromRow,
   memberToInsert,
+  godparentFromRow,
+  godparentToInsert,
   relationFromRow,
   relationToInsert,
   userFromRow,
   type FamilyGroupRow,
   type FamilyUserRow,
   type MemberRow,
+  type GodparentRow,
   type RelationRow,
 } from "./rows";
-import type { MemberRelation } from "../types";
 
 export type SignUpResult = "signed-in" | "confirm-email" | "exists";
 
@@ -78,14 +80,17 @@ export async function loadFamily(user: User): Promise<FamilyState | null> {
   const group = firstRelation(membership.family_groups as FamilyGroupRow | FamilyGroupRow[] | null);
   if (!group) throw new Error("This account is missing its household.");
 
-  const [{ data: people, error: peopleError }, { data: members, error: membersError }, { data: relations, error: relationsError }] = await Promise.all([
-    supabase.from("family_users").select("user_id, display_name, email, role, joined_at").eq("family_group_id", group.id).order("joined_at"),
-    supabase.from("members").select("*, addresses(*)").eq("family_group_id", group.id).order("last_name").order("first_name"),
-    supabase.from("member_relations").select("id, family_group_id, from_member_id, to_member_id, kind").eq("family_group_id", group.id),
-  ]);
+  const [{ data: people, error: peopleError }, { data: members, error: membersError }, { data: relations, error: relationsError }, { data: godparents, error: godparentsError }] =
+    await Promise.all([
+      supabase.from("family_users").select("user_id, display_name, email, role, joined_at").eq("family_group_id", group.id).order("joined_at"),
+      supabase.from("members").select("*, addresses(*)").eq("family_group_id", group.id).order("last_name").order("first_name"),
+      supabase.from("member_relations").select("id, family_group_id, from_member_id, to_member_id, kind, wedding_date").eq("family_group_id", group.id),
+      supabase.from("godparents").select("id, family_group_id, member_id, slot, godparent_member_id, godparent_name").eq("family_group_id", group.id),
+    ]);
   if (peopleError) throw supabaseFailure(peopleError);
   if (membersError) throw supabaseFailure(membersError);
   if (relationsError) throw supabaseFailure(relationsError);
+  if (godparentsError) throw supabaseFailure(godparentsError);
 
   return {
     group: groupFromRow(group),
@@ -95,6 +100,10 @@ export async function loadFamily(user: User): Promise<FamilyState | null> {
     relations: ((relations ?? []) as RelationRow[]).flatMap((row) => {
       const relation = relationFromRow(row);
       return relation ? [relation] : [];
+    }),
+    godparents: ((godparents ?? []) as GodparentRow[]).flatMap((row) => {
+      const godparent = godparentFromRow(row);
+      return godparent ? [godparent] : [];
     }),
   };
 }
@@ -202,6 +211,15 @@ export async function replaceMemberRelations(memberId: string, relations: readon
   const { error } = await supabase.from("member_relations").delete().or(`from_member_id.eq.${memberId},to_member_id.eq.${memberId}`);
   if (error) throw supabaseFailure(error);
   await insertRelations(relations.filter((relation) => relation.fromMemberId === memberId || relation.toMemberId === memberId));
+}
+
+export async function replaceMemberGodparents(memberId: string, godparents: readonly Godparent[]): Promise<void> {
+  const supabase = getSupabase();
+  const { error } = await supabase.from("godparents").delete().eq("member_id", memberId);
+  if (error) throw supabaseFailure(error);
+  if (godparents.length === 0) return;
+  const { error: insertError } = await supabase.from("godparents").insert(godparents.map(godparentToInsert));
+  if (insertError) throw supabaseFailure(insertError);
 }
 
 export async function updateOwnDisplayName(userId: string, displayName: string): Promise<void> {

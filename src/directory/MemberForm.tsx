@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState, type FormEvent, type Ref } from "re
 import { photoProblem, type MemberPhotoSelection } from "../lib/memberPhoto";
 import { SUGGESTED_RELATIONSHIPS } from "../types";
 import { FamilyLinksField } from "./FamilyLinksField";
+import { GodparentsField } from "./GodparentsField";
 import { MemberAvatar } from "./MemberAvatar";
 import { nextBirthdayLabel } from "./memberDisplay";
 import {
@@ -25,6 +26,7 @@ export function MemberForm({
   photoUrl = null,
   hasPhoto = false,
   people = [],
+  selfId,
   onSave,
   onDirtyChange,
 }: {
@@ -34,7 +36,8 @@ export function MemberForm({
   photoUrl?: string | null;
   hasPhoto?: boolean;
   people?: readonly { id: string; fullName: string }[];
-  onSave: (draft: MemberDraft, photo: MemberPhotoSelection, links: MemberLinkInput[]) => void;
+  selfId?: string;
+  onSave: (draft: MemberDraft, photo: MemberPhotoSelection, links: MemberLinkInput[], godparents: MemberFormValues["godparents"]) => void;
   onDirtyChange: (dirty: boolean) => void;
 }) {
   const [values, setValues] = useState(initial);
@@ -82,13 +85,13 @@ export function MemberForm({
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextErrors = validateMemberForm(values);
+    const nextErrors = validateMemberForm(values, selfId);
     setErrors(nextErrors);
     if (nextErrors.firstName) firstNameRef.current?.focus();
     else if (nextErrors.dateOfBirth) dateRef.current?.focus();
     else if (nextErrors.email) emailRef.current?.focus();
     if (hasFormErrors(nextErrors)) return;
-    onSave(formValuesToDraft(values, addressId), { file: photoFile, remove: photoRemoved && !photoFile }, values.links);
+    onSave(formValuesToDraft(values, addressId), { file: photoFile, remove: photoRemoved && !photoFile }, values.links, values.godparents);
   }
 
   function choosePhoto(file: File) {
@@ -189,6 +192,7 @@ export function MemberForm({
         error={errors.links}
         onChange={(links) => update("links", links)}
       />
+      <GodparentsField slots={values.godparents} people={people} error={errors.godparents} onChange={(godparents) => update("godparents", godparents)} />
       <TextField
         id={`${baseId}-relationship`}
         label="Label"

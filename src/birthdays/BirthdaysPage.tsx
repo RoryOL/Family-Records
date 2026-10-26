@@ -1,7 +1,8 @@
 import { Download } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router";
-import { birthdayCalendar } from "../lib/calendar";
+import { anniversaryPhrase, upcomingAnniversaries, weddingsWithoutDates } from "../lib/anniversaries";
+import { birthdayCalendar, type CalendarEvent } from "../lib/calendar";
 import { birthdayTiming, parseBirthdayWindow, upcomingBirthdays } from "../lib/birthdays";
 import { formatLongDate, formatToday } from "../lib/dates";
 import { downloadFile, fileSlug } from "../lib/download";
@@ -9,7 +10,7 @@ import { MemberAvatar } from "../directory/MemberAvatar";
 import { focusMemberId, relationshipSummary } from "../lib/kinship";
 import { pageClass, secondaryButtonClass, surfaceClass } from "../directory/styles";
 import { useFamily } from "../store/FamilyProvider";
-import type { BirthdayWindow } from "../types";
+import type { BirthdayWindow, Member, MemberRelation } from "../types";
 
 const windows: BirthdayWindow[] = [7, 30, 90];
 
@@ -20,7 +21,9 @@ export function BirthdaysPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const within = parseBirthdayWindow(searchParams.get("within"));
   const upcoming = upcomingBirthdays(members, within);
+  const anniversaries = upcomingAnniversaries(members, relations, within);
   const undated = members.filter((member) => !member.dateOfBirth).sort((a, b) => a.fullName.localeCompare(b.fullName));
+  const undatedWeddings = weddingsWithoutDates(members, relations);
 
   useEffect(() => {
     document.title = `Birthdays · ${group.name} · Family Records`;
@@ -36,7 +39,7 @@ export function BirthdaysPage() {
   function downloadCalendar() {
     downloadFile(
       `${fileSlug(group.name)}-birthdays.ics`,
-      birthdayCalendar(members, `${group.name} birthdays`),
+      birthdayCalendar(members, `${group.name} birthdays`, new Date(), anniversaryEvents(members, relations)),
       "text/calendar;charset=utf-8",
     );
   }
@@ -47,7 +50,7 @@ export function BirthdaysPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">{group.name}</p>
           <h1 className="mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">Birthdays</h1>
-          <p className="mt-3 max-w-xl text-stone-500">Upcoming dates as of {formatToday()}, with the age each person is turning.</p>
+          <p className="mt-3 max-w-xl text-stone-500">Upcoming birthdays and wedding anniversaries as of {formatToday()}.</p>
         </div>
         <button type="button" className={secondaryButtonClass} onClick={downloadCalendar}>
           <Download size={16} aria-hidden />
@@ -116,6 +119,49 @@ export function BirthdaysPage() {
         </ol>
       )}
 
+      <section className="mt-12">
+        <h2 className="font-display text-3xl font-bold tracking-tight">Anniversaries</h2>
+        {anniversaries.length === 0 ? (
+          <p className={`${surfaceClass} mt-6 px-6 py-10 text-center font-display text-2xl font-bold tracking-tight`}>
+            No anniversaries in the next {within} days.
+          </p>
+        ) : (
+          <ol className="mt-6 grid gap-6">
+            {anniversaries.map((item) => {
+              const soon = item.daysUntil <= 7;
+              return (
+                <li key={item.relationId}>
+                  <div
+                    className={`flex flex-col gap-3 rounded-3xl border px-6 py-6 shadow-warm sm:flex-row sm:items-center sm:justify-between sm:px-8 ${
+                      soon ? "border-amber-200/80 bg-gradient-to-r from-amber-500/10 to-orange-500/10" : "border-stone-200/60 bg-white"
+                    }`}
+                  >
+                    <span>
+                      <Link className="font-display text-2xl font-bold tracking-tight text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(item.leftId)}`}>
+                        {item.label.split(" and ")[0]}
+                      </Link>
+                      <span className="font-display text-2xl font-bold tracking-tight"> and </span>
+                      <Link className="font-display text-2xl font-bold tracking-tight text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(item.rightId)}`}>
+                        {item.label.split(" and ")[1]}
+                      </Link>
+                      <span className="mt-1 block text-sm text-stone-500">
+                        {anniversaryPhrase(item.years)} · Married {formatLongDate(item.weddingDate)}
+                      </span>
+                    </span>
+                    <span className={`text-sm font-semibold ${soon ? "text-honey" : "text-stone-500"}`}>
+                      {formatLongDate(item.nextOccurrence)} · {birthdayTiming(item.daysUntil)}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+        {undatedWeddings.length > 0 ? (
+          <p className="mt-6 text-sm text-stone-500">No wedding date on file: {undatedWeddings.map((item) => item.label).join(", ")}.</p>
+        ) : null}
+      </section>
+
       {undated.length > 0 ? (
         <p className="mt-10 text-sm text-stone-500">
           No birthday on file:{" "}
@@ -132,4 +178,16 @@ export function BirthdaysPage() {
       ) : null}
     </main>
   );
+}
+
+function anniversaryEvents(members: readonly Member[], relations: readonly MemberRelation[]): CalendarEvent[] {
+  const byId = new Map(members.map((member) => [member.id, member.fullName]));
+  return relations.flatMap((relation) => {
+    if (relation.kind !== "spouse" || !relation.weddingDate) return [];
+    const left = byId.get(relation.fromMemberId);
+    const right = byId.get(relation.toMemberId);
+    if (!left || !right) return [];
+    const label = [left, right].sort((a, b) => a.localeCompare(b)).join(" and ");
+    return [{ id: relation.id, date: relation.weddingDate, summary: `${label}'s anniversary`, description: `${label}, married ${relation.weddingDate}` }];
+  });
 }

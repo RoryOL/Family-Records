@@ -19,10 +19,11 @@ In the Supabase SQL editor, run these files in order:
 - `supabase/migrations/20261013120000_member_relations.sql` adds links between people so the family tree can name brothers, nieces, and nephews
 - `supabase/migrations/20261013120000_app_releases.sql` lets the phone download a newer APK
 - `supabase/migrations/20261014120000_own_profile.sql` links the signed-in account to one person in the household
+- `supabase/migrations/20261026120000_weddings_godparents.sql` adds wedding dates on partner links and two godparents for each person
 
 Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
 
-`npm test` checks the store, directory filters, the member form, pictures, relationships, the family tree, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, the home-screen hint, and the APK update check. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
+`npm test` checks the store, directory filters, the member form, pictures, relationships, weddings, godparents, the family tree, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, the home-screen hint, and the APK update check. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
 
 ## Install
 
@@ -79,6 +80,6 @@ src/
 supabase/migrations/             Household tables, invite functions, pictures, and row level security
 ```
 
-`/` is the directory. `/me` is where the signed-in person adds their birthdate, address, and relationships. `/tree` shows each generation on its own row, with the eldest person on the left. `/birthdays` lists upcoming birthdays and downloads an `.ics` calendar. `/cards` shows verified mailing addresses, with copy and CSV export. `/import` accepts a CSV, XLS, or XLSX file, maps the columns, and adds the rows that pass the check.
+`/` is the directory. `/me` is where the signed-in person adds their birthdate, address, and relationships. `/tree` shows each generation on its own row, with the eldest person on the left. `/birthdays` lists upcoming birthdays and wedding anniversaries, and downloads an `.ics` calendar. `/cards` shows verified mailing addresses, with copy and CSV export. `/import` accepts a CSV, XLS, or XLSX file, maps the columns, and adds the rows that pass the check.
 
 Sign in with email and password. Create a household, or join one with its invite code. The code is on the directory header. Editors can read and update people. Imported and new addresses stay unverified until someone marks them for mail. An empty household can add the Harper sample so the birthday and mailing screens have people to show.

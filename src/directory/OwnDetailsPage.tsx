@@ -8,7 +8,7 @@ import { memberToFormValues } from "./memberForm";
 import { pageClass, primaryButtonClass, surfaceClass } from "./styles";
 
 export function OwnDetailsPage() {
-  const { group, currentUser, members, relations, saveOwnDetails } = useFamily();
+  const { group, currentUser, members, relations, godparents, saveOwnDetails } = useFamily();
   const selfId = focusMemberId(members, currentUser.id);
   const self = selfId ? members.find((member) => member.id === selfId) : undefined;
   const [saving, setSaving] = useState(false);
@@ -41,7 +41,8 @@ export function OwnDetailsPage() {
         ) : null}
         <MemberForm
           key={self ? `${self.id}:${self.updatedAt}` : "new"}
-          initial={self ? memberToFormValues(self, linksTouching(self.id, relations)) : ownProfileInitial(currentUser)}
+          initial={self ? memberToFormValues(self, linksTouching(self.id, relations), godparents) : ownProfileInitial(currentUser)}
+          selfId={self?.id}
           addressId={self?.address?.id}
           people={members.filter((member) => member.id !== self?.id).map((member) => ({ id: member.id, fullName: member.fullName }))}
           suggestions={listRelationships(members)}
@@ -50,10 +51,10 @@ export function OwnDetailsPage() {
           onDirtyChange={(dirty) => {
             if (dirty) setSaved(false);
           }}
-          onSave={(draft, photo, links) => {
+          onSave={(draft, photo, links, sponsors) => {
             setSaving(true);
             setError(null);
-            void saveOwnDetails(draft, photo, links)
+            void saveOwnDetails(draft, photo, links, sponsors)
               .then(() => setSaved(true))
               .catch((caught: unknown) => {
                 setError(caught instanceof Error ? caught.message : "Your details could not be saved.");

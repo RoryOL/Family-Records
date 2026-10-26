@@ -1,4 +1,4 @@
-import type { Address, AddressFormat, FamilyGroup, FamilyUser, Member, MemberRelation, RelationKind } from "../types";
+import type { Address, AddressFormat, FamilyGroup, FamilyUser, Godparent, Member, MemberRelation, RelationKind } from "../types";
 
 export interface FamilyGroupRow {
   id: string;
@@ -198,17 +198,29 @@ export interface RelationRow {
   from_member_id: string;
   to_member_id: string;
   kind: string;
+  wedding_date?: string | null;
+}
+
+export interface GodparentRow {
+  id: string;
+  family_group_id: string;
+  member_id: string;
+  slot: number;
+  godparent_member_id: string | null;
+  godparent_name: string | null;
 }
 
 export function relationFromRow(row: RelationRow): MemberRelation | null {
   if (row.kind !== "parent" && row.kind !== "spouse" && row.kind !== "sibling") return null;
   const kind: RelationKind = row.kind;
+  const weddingDate = kind === "spouse" && row.wedding_date ? row.wedding_date.slice(0, 10) : null;
   return {
     id: row.id,
     familyGroupId: row.family_group_id,
     fromMemberId: row.from_member_id,
     toMemberId: row.to_member_id,
     kind,
+    weddingDate,
   };
 }
 
@@ -218,6 +230,7 @@ export function relationToInsert(relation: MemberRelation): {
   from_member_id: string;
   to_member_id: string;
   kind: RelationKind;
+  wedding_date: string | null;
 } {
   return {
     id: relation.id,
@@ -225,6 +238,39 @@ export function relationToInsert(relation: MemberRelation): {
     from_member_id: relation.fromMemberId,
     to_member_id: relation.toMemberId,
     kind: relation.kind,
+    wedding_date: relation.kind === "spouse" ? relation.weddingDate : null,
+  };
+}
+
+export function godparentFromRow(row: GodparentRow): Godparent | null {
+  if (row.slot !== 1 && row.slot !== 2) return null;
+  const name = row.godparent_name?.trim() ?? "";
+  if (!row.godparent_member_id && !name) return null;
+  return {
+    id: row.id,
+    familyGroupId: row.family_group_id,
+    memberId: row.member_id,
+    slot: row.slot,
+    godparentMemberId: row.godparent_member_id,
+    godparentName: name,
+  };
+}
+
+export function godparentToInsert(godparent: Godparent): {
+  id: string;
+  family_group_id: string;
+  member_id: string;
+  slot: 1 | 2;
+  godparent_member_id: string | null;
+  godparent_name: string;
+} {
+  return {
+    id: godparent.id,
+    family_group_id: godparent.familyGroupId,
+    member_id: godparent.memberId,
+    slot: godparent.slot,
+    godparent_member_id: godparent.godparentMemberId,
+    godparent_name: godparent.godparentName,
   };
 }
 

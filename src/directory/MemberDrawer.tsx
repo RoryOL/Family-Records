@@ -18,7 +18,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
   const { memberId } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { members, relations, people, getMember, addMember, updateMember, removeMember } = useFamily();
+  const { members, relations, godparents, people, getMember, addMember, updateMember, removeMember } = useFamily();
   const member = intent === "existing" && memberId ? getMember(memberId) : undefined;
   const missing = intent === "existing" && !member;
   const editing = !missing && (intent === "create" || searchParams.get("edit") === "1");
@@ -78,17 +78,17 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
     if (event.target === event.currentTarget) requestClose("directory");
   }
 
-  async function save(draft: Parameters<typeof addMember>[0], photo: MemberPhotoSelection, links: readonly MemberLinkInput[]) {
+  async function save(draft: Parameters<typeof addMember>[0], photo: MemberPhotoSelection, links: readonly MemberLinkInput[], sponsors: Parameters<typeof addMember>[3]) {
     setSaving(true);
     setSaveError(null);
     try {
       if (intent === "create") {
-        const created = await addMember(draft, photo.file, links);
+        const created = await addMember(draft, photo.file, links, sponsors);
         navigate(withSearch(`/members/${encodeURIComponent(created.id)}`, withoutEdit(searchParams)), { replace: true });
         return;
       }
       if (!member) return;
-      await updateMember(member.id, draft, photo, links);
+      await updateMember(member.id, draft, photo, links, sponsors);
       performClose("view");
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "That change could not be saved.");
@@ -144,7 +144,8 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
           ) : editing ? (
             <MemberForm
               key={member ? `${member.id}:${member.updatedAt}` : "new"}
-              initial={member ? memberToFormValues(member, linksTouching(member.id, relations)) : emptyFormValues()}
+              initial={member ? memberToFormValues(member, linksTouching(member.id, relations), godparents) : emptyFormValues()}
+              selfId={member?.id}
               addressId={member?.address?.id}
               people={members.filter((item) => item.id !== member?.id).map((item) => ({ id: item.id, fullName: item.fullName }))}
               suggestions={listRelationships(members)}
@@ -162,6 +163,9 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
                 members.map((item) => ({ id: item.id, fullName: item.fullName, gender: item.gender })),
                 relations,
               )}
+              relations={relations}
+              godparents={godparents}
+              household={members}
             />
           ) : null}
         </div>

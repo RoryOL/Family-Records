@@ -1,19 +1,42 @@
 import { Link } from "react-router";
 import { formatAddressBlock } from "../lib/address";
 import { eircodeSummary, lookupEircode } from "../lib/eircode";
+import { weddingWith } from "../lib/anniversaries";
+import { describedGodchildren, describedGodparents, type NamedPerson } from "../lib/godparents";
 import { formatLongDate } from "../lib/dates";
 import type { KinshipLine } from "../lib/kinship";
 import { MemberAvatar } from "./MemberAvatar";
 import { addressBadge, badgeClass, nextBirthdayLabel } from "./memberDisplay";
 import { labelClass } from "./styles";
-import type { FamilyUser, Member } from "../types";
+import type { FamilyUser, Godparent, Member, MemberRelation } from "../types";
 
-export function MemberProfile({ member, people, lines = [] }: { member: Member; people: readonly FamilyUser[]; lines?: readonly KinshipLine[] }) {
+export function MemberProfile({
+  member,
+  people,
+  lines = [],
+  relations = [],
+  godparents = [],
+  household = [],
+}: {
+  member: Member;
+  people: readonly FamilyUser[];
+  lines?: readonly KinshipLine[];
+  relations?: readonly MemberRelation[];
+  godparents?: readonly Godparent[];
+  household?: readonly Member[];
+}) {
   const badge = addressBadge(member.address);
   const next = nextBirthdayLabel(member.dateOfBirth);
   const login = people.find((person) => person.id === member.linkedUserId);
   const address = member.address ? formatAddressBlock(member.address) : "";
   const eircode = member.address?.format === "ie" ? lookupEircode(member.address.postalCode) : null;
+  const names = household.map((person) => ({ id: person.id, fullName: person.fullName }));
+  const sponsors = describedGodparents(member.id, godparents, names);
+  const godchildren = describedGodchildren(member.id, godparents, names);
+  const weddings = lines.flatMap((line) => {
+    const date = weddingWith(member.id, line.otherId, relations);
+    return date ? [{ otherId: line.otherId, otherName: line.otherName, date }] : [];
+  });
 
   return (
     <div>
@@ -38,8 +61,23 @@ export function MemberProfile({ member, people, lines = [] }: { member: Member; 
           {lines.length > 0 && member.relationship && !lines.some((line) => line.term === member.relationship) ? (
             <p className="mt-2 text-stone-500">Label: {member.relationship}</p>
           ) : null}
+          {weddings.length > 0 ? (
+            <ul className="mt-2 grid gap-1">
+              {weddings.map((wedding) => (
+                <li key={wedding.otherId}>
+                  Married to{" "}
+                  <Link className="underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(wedding.otherId)}`}>
+                    {wedding.otherName}
+                  </Link>{" "}
+                  on {formatLongDate(wedding.date)}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </dd>
       </div>
+      <PersonList title="Godparents" people={sponsors} empty="No godparents on file" />
+      <PersonList title="Godchildren" people={godchildren} empty="No godchildren on file" />
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <dt className={labelClass}>Date of birth</dt>
@@ -93,6 +131,33 @@ export function MemberProfile({ member, people, lines = [] }: { member: Member; 
         <dd className="mt-1 text-sm">{login ? `${login.email} · ${login.role === "owner" ? "Owner" : "Editor"}` : "No sign-in linked"}</dd>
       </div>
       </dl>
+    </div>
+  );
+}
+
+function PersonList({ title, people, empty }: { title: string; people: readonly NamedPerson[]; empty: string }) {
+  return (
+    <div>
+      <dt className={labelClass}>{title}</dt>
+      <dd className="mt-1 text-sm">
+        {people.length === 0 ? (
+          empty
+        ) : (
+          <ul className="grid gap-1">
+            {people.map((person) => (
+              <li key={`${person.memberId ?? "name"}-${person.name}`}>
+                {person.memberId ? (
+                  <Link className="underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(person.memberId)}`}>
+                    {person.name}
+                  </Link>
+                ) : (
+                  person.name
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </dd>
     </div>
   );
 }

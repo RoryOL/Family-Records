@@ -14,7 +14,7 @@ function person(id: string, fullName: string, gender: Gender | null = null): Per
 
 function link(from: string, to: string, kind: MemberRelation["kind"]): MemberRelation {
   const [fromMemberId, toMemberId] = kind === "parent" || from < to ? [from, to] : [to, from];
-  return { id: `${kind}-${fromMemberId}-${toMemberId}`, familyGroupId: "grp", fromMemberId, toMemberId, kind };
+  return { id: `${kind}-${fromMemberId}-${toMemberId}`, familyGroupId: "grp", fromMemberId, toMemberId, kind, weddingDate: null };
 }
 
 const aoife = person("aoife", "Aoife", "female");
@@ -107,6 +107,13 @@ describe("member links", () => {
   it("stores a child as a parent link pointing at this person", () => {
     const stored = applyMemberLinks([], "grp", "saoirse", [{ otherId: "cian", role: "child" }]);
     expect(stored[0]).toMatchObject({ fromMemberId: "cian", toMemberId: "saoirse", kind: "parent" });
+  });
+
+  it("keeps a wedding date on a partner link and reads it from either person", () => {
+    const stored = applyMemberLinks([], "grp", "elena", [{ otherId: "marcus", role: "spouse", weddingDate: "2014-09-23" }]);
+    expect(stored[0]).toMatchObject({ kind: "spouse", weddingDate: "2014-09-23" });
+    expect(linksTouching("marcus", stored)).toEqual([{ otherId: "elena", role: "spouse", weddingDate: "2014-09-23" }]);
+    expect(linkProblem([{ otherId: "marcus", role: "spouse", weddingDate: "2014-02-31" }])).toBe("Enter a real wedding date.");
   });
 
   it("rejects a blank person, a duplicate, and parent links that point both ways", () => {
