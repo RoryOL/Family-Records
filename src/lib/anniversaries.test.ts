@@ -26,7 +26,7 @@ function member(id: string, fullName: string, dateOfBirth: string | null): Membe
 
 function marriage(from: string, to: string, weddingDate: string | null): MemberRelation {
   const [fromMemberId, toMemberId] = from < to ? [from, to] : [to, from];
-  return { id: `wed-${fromMemberId}-${toMemberId}`, familyGroupId: "grp", fromMemberId, toMemberId, kind: "spouse", weddingDate };
+  return { id: `wed-${fromMemberId}-${toMemberId}`, familyGroupId: "grp", fromMemberId, toMemberId, kind: "married", weddingDate };
 }
 
 const september21 = new Date(2026, 8, 21);
@@ -38,7 +38,8 @@ describe("upcoming anniversaries", () => {
   const ruth = member("ruth", "Ruth Ellison", "1958-11-02");
 
   it("lists a wedding inside the window, with the older partner first and the years since the wedding", () => {
-    const relations = [marriage("elena", "marcus", "2014-09-23"), marriage("arthur", "ruth", "1979-06-21"), marriage("elena", "arthur", null)];
+    const partner = { ...marriage("marcus", "ruth", null), kind: "spouse" as const, weddingDate: null };
+    const relations = [marriage("elena", "marcus", "2014-09-23"), marriage("arthur", "ruth", "1979-06-21"), marriage("elena", "arthur", null), partner];
     const upcoming = upcomingAnniversaries([elena, marcus, arthur, ruth], relations, 30, september21);
     expect(upcoming.map((item) => [item.label, item.daysUntil, item.years])).toEqual([["Marcus Harper and Elena Harper", 2, 12]]);
     expect(weddingsWithoutDates([elena, marcus, arthur, ruth], relations).map((item) => item.label)).toEqual(["Arthur Ellison and Elena Harper"]);

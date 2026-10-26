@@ -4,6 +4,7 @@ import {
   describedGodchildren,
   describedGodparents,
   detachGodparent,
+  godparentOptions,
   godparentProblem,
   godparentsFromSlots,
   slotsFromGodparents,
@@ -55,6 +56,27 @@ describe("godparents", () => {
       { name: "Patrick Murphy", memberId: null },
     ]);
     expect(describedGodchildren("ruth", links, members).map((person) => person.name)).toEqual(["Jonah Harper", "Willa Harper"]);
+  });
+
+  it("leaves someone younger than the person off the godparent list", () => {
+    const household = [
+      { id: "older", fullName: "Older", dateOfBirth: "1950-01-01" },
+      { id: "same", fullName: "Same Day", dateOfBirth: "2000-05-01" },
+      { id: "younger", fullName: "Younger", dateOfBirth: "2015-01-01" },
+      { id: "unknown", fullName: "Unknown", dateOfBirth: null },
+    ];
+    expect(godparentOptions(household, "2000-05-01").map((person) => person.id)).toEqual(["older", "same", "unknown"]);
+    expect(godparentOptions(household, "2000-05-01", "younger").map((person) => person.id)).toEqual(["older", "same", "younger", "unknown"]);
+    expect(godparentOptions(household, "").map((person) => person.id)).toEqual(["older", "same", "younger", "unknown"]);
+    expect(
+      godparentProblem(
+        [{ choice: "younger", name: "" }, { choice: "", name: "" }],
+        "child",
+        household,
+        "2000-05-01",
+      ),
+    ).toBe("A godparent cannot be younger than this person.");
+    expect(godparentProblem([{ choice: "older", name: "" }, { choice: "", name: "" }], "child", household, "2000-05-01")).toBeNull();
   });
 
   it("keeps the written name when a godparent leaves the household", () => {

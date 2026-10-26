@@ -147,7 +147,9 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
               initial={member ? memberToFormValues(member, linksTouching(member.id, relations), godparents) : emptyFormValues()}
               selfId={member?.id}
               addressId={member?.address?.id}
-              people={members.filter((item) => item.id !== member?.id).map((item) => ({ id: item.id, fullName: item.fullName }))}
+              people={members
+                .filter((item) => item.id !== member?.id)
+                .map((item) => ({ id: item.id, fullName: item.fullName, dateOfBirth: item.dateOfBirth }))}
               suggestions={listRelationships(members)}
               photoUrl={member?.photoUrl ?? null}
               hasPhoto={Boolean(member?.photoPath)}

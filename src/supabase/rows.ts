@@ -211,9 +211,12 @@ export interface GodparentRow {
 }
 
 export function relationFromRow(row: RelationRow): MemberRelation | null {
-  if (row.kind !== "parent" && row.kind !== "spouse" && row.kind !== "sibling") return null;
-  const kind: RelationKind = row.kind;
-  const weddingDate = kind === "spouse" && row.wedding_date ? row.wedding_date.slice(0, 10) : null;
+  // A partner row that already has a wedding date is a marriage. Reading it that way keeps the date
+  // if this household has not run the marriage migration yet.
+  const kindName = row.kind === "spouse" && row.wedding_date ? "married" : row.kind;
+  if (kindName !== "parent" && kindName !== "spouse" && kindName !== "married" && kindName !== "sibling") return null;
+  const kind: RelationKind = kindName;
+  const weddingDate = kind === "married" && row.wedding_date ? row.wedding_date.slice(0, 10) : null;
   return {
     id: row.id,
     familyGroupId: row.family_group_id,
@@ -238,7 +241,7 @@ export function relationToInsert(relation: MemberRelation): {
     from_member_id: relation.fromMemberId,
     to_member_id: relation.toMemberId,
     kind: relation.kind,
-    wedding_date: relation.kind === "spouse" ? relation.weddingDate : null,
+    wedding_date: relation.kind === "married" ? relation.weddingDate : null,
   };
 }
 

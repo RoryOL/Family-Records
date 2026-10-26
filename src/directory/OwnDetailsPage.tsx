@@ -44,7 +44,9 @@ export function OwnDetailsPage() {
           initial={self ? memberToFormValues(self, linksTouching(self.id, relations), godparents) : ownProfileInitial(currentUser)}
           selfId={self?.id}
           addressId={self?.address?.id}
-          people={members.filter((member) => member.id !== self?.id).map((member) => ({ id: member.id, fullName: member.fullName }))}
+          people={members
+            .filter((member) => member.id !== self?.id)
+            .map((member) => ({ id: member.id, fullName: member.fullName, dateOfBirth: member.dateOfBirth }))}
           suggestions={listRelationships(members)}
           photoUrl={self?.photoUrl ?? null}
           hasPhoto={Boolean(self?.photoPath)}

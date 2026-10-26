@@ -1,3 +1,4 @@
+import { isYoungerThan } from "./dates";
 import type { Godparent } from "../types";
 
 /** Dropdown value for a godparent who is not already in the household. */
@@ -31,8 +32,22 @@ export function slotsFromGodparents(memberId: string, godparents: readonly Godpa
   return slots;
 }
 
-/** Reject a blank typed name, a self link, or the same person in both places. */
-export function godparentProblem(slots: readonly GodparentSlot[], selfId?: string): string | null {
+/** People who can be chosen as a godparent. Someone younger than the subject is left out, except a person already chosen. */
+export function godparentOptions<T extends { id: string; dateOfBirth?: string | null }>(
+  people: readonly T[],
+  subjectDateOfBirth: string | null | undefined,
+  selectedId = "",
+): T[] {
+  return people.filter((person) => person.id === selectedId || !isYoungerThan(person.dateOfBirth, subjectDateOfBirth));
+}
+
+/** Reject a blank typed name, a self link, the same person twice, or a godparent younger than this person. */
+export function godparentProblem(
+  slots: readonly GodparentSlot[],
+  selfId?: string,
+  people: readonly { id: string; dateOfBirth?: string | null }[] = [],
+  subjectDateOfBirth?: string | null,
+): string | null {
   const chosen = new Set<string>();
   for (const slot of slots) {
     if (!slot.choice) continue;
@@ -46,6 +61,8 @@ export function godparentProblem(slots: readonly GodparentSlot[], selfId?: strin
       continue;
     }
     if (selfId && slot.choice === selfId) return "A person cannot be their own godparent.";
+    const person = people.find((item) => item.id === slot.choice);
+    if (person && isYoungerThan(person.dateOfBirth, subjectDateOfBirth)) return "A godparent cannot be younger than this person.";
     if (chosen.has(slot.choice)) return "Each godparent should be a different person.";
     chosen.add(slot.choice);
   }

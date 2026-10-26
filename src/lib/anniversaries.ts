@@ -27,7 +27,7 @@ export function upcomingAnniversaries(
   const upcoming: UpcomingAnniversary[] = [];
 
   for (const relation of relations) {
-    if (relation.kind !== "spouse" || !relation.weddingDate) continue;
+    if (relation.kind !== "married" || !relation.weddingDate) continue;
     const left = byId.get(relation.fromMemberId);
     const right = byId.get(relation.toMemberId);
     if (!left || !right) continue;
@@ -53,7 +53,7 @@ export function upcomingAnniversaries(
 export function weddingsWithoutDates(members: readonly Member[], relations: readonly MemberRelation[]): { relationId: string; label: string }[] {
   const byId = new Map(members.map((member) => [member.id, member]));
   return relations
-    .filter((relation) => relation.kind === "spouse" && !relation.weddingDate)
+    .filter((relation) => relation.kind === "married" && !relation.weddingDate)
     .flatMap((relation) => {
       const left = byId.get(relation.fromMemberId);
       const right = byId.get(relation.toMemberId);
@@ -67,7 +67,7 @@ export function weddingsWithoutDates(members: readonly Member[], relations: read
 export function weddingWith(memberId: string, otherId: string, relations: readonly MemberRelation[]): IsoDate | null {
   const relation = relations.find(
     (item) =>
-      item.kind === "spouse" &&
+      item.kind === "married" &&
       ((item.fromMemberId === memberId && item.toMemberId === otherId) || (item.fromMemberId === otherId && item.toMemberId === memberId)),
   );
   return relation?.weddingDate ?? null;
