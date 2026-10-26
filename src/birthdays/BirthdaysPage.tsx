@@ -8,6 +8,7 @@ import { formatLongDate, formatToday } from "../lib/dates";
 import { downloadFile, fileSlug } from "../lib/download";
 import { MemberAvatar } from "../directory/MemberAvatar";
 import { focusMemberId, relationshipSummary } from "../lib/kinship";
+import { isDeceased } from "../lib/members";
 import { pageClass, secondaryButtonClass, surfaceClass } from "../directory/styles";
 import { useFamily } from "../store/FamilyProvider";
 import type { BirthdayWindow, Member, MemberRelation } from "../types";
@@ -22,7 +23,7 @@ export function BirthdaysPage() {
   const within = parseBirthdayWindow(searchParams.get("within"));
   const upcoming = upcomingBirthdays(members, within);
   const anniversaries = upcomingAnniversaries(members, relations, within);
-  const undated = members.filter((member) => !member.dateOfBirth).sort((a, b) => a.fullName.localeCompare(b.fullName));
+  const undated = members.filter((member) => !member.dateOfBirth && !isDeceased(member)).sort((a, b) => a.fullName.localeCompare(b.fullName));
   const undatedWeddings = weddingsWithoutDates(members, relations);
 
   useEffect(() => {

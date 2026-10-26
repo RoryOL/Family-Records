@@ -8,16 +8,22 @@ import { formatAddressBlock, formatMailingLabels } from "../lib/address";
 import { eircodeMailingNote } from "../lib/eircode";
 import { downloadFile, fileSlug } from "../lib/download";
 import { mailingCsv, verifiedMailingMembers } from "../lib/mailingCsv";
+import { isDeceased } from "../lib/members";
 import { useFamily } from "../store/FamilyProvider";
 
 export function CardsPage() {
   const { group, members, relations, currentUser } = useFamily();
   const focusId = focusMemberId(members, currentUser.id);
   const people = members.map((member) => ({ id: member.id, fullName: member.fullName, gender: member.gender }));
-  const ready = verifiedMailingMembers(members);
+  const living = members.filter((member) => !isDeceased(member));
+  const ready = verifiedMailingMembers(living);
   const labels = formatMailingLabels(ready);
-  const skipped = members
+  const skipped = living
     .filter((member) => !member.address?.verified)
+    .slice()
+    .sort((a, b) => a.fullName.localeCompare(b.fullName));
+  const remembered = members
+    .filter(isDeceased)
     .slice()
     .sort((a, b) => a.fullName.localeCompare(b.fullName));
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
@@ -124,6 +130,21 @@ export function CardsPage() {
             </span>
           ))}
           . Mark an address verified on the profile to include it.
+        </p>
+      ) : null}
+
+      {remembered.length > 0 ? (
+        <p className={`${skipped.length > 0 ? "mt-4" : "mt-10"} text-sm text-stone-500`}>
+          Recorded as deceased, so left off greeting cards:{" "}
+          {remembered.map((member, index) => (
+            <span key={member.id}>
+              {index > 0 ? ", " : null}
+              <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(member.id)}`}>
+                {member.fullName}
+              </Link>
+            </span>
+          ))}
+          .
         </p>
       ) : null}
     </main>

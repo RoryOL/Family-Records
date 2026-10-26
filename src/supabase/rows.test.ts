@@ -88,9 +88,36 @@ describe("household rows", () => {
       addresses: null,
     });
     expect(member.dateOfBirth).toBe("2020-06-05");
+    expect(member.deceased).toBe(false);
+    expect(member.dateOfDeath).toBeNull();
     expect(member.address).toBeNull();
     expect(member.photoPath).toBeNull();
     expect(member.photoUrl).toBeNull();
+  });
+
+  it("maps a death date in both directions", () => {
+    const member = ensureMemberIds(
+      createMember("2b6d9c10-7a4e-4f1b-9c2d-3e5f7a8b9c01", {
+        firstName: "Arthur",
+        lastName: "Ellison",
+        relationship: "Parent",
+        dateOfBirth: "1956-12-18",
+        deceased: true,
+        dateOfDeath: "2019-03-02",
+        phone: null,
+        email: null,
+        notes: "",
+        address: null,
+      }),
+    );
+    const insert = memberToInsert(member);
+    expect(insert.deceased).toBe(true);
+    expect(insert.date_of_death).toBe("2019-03-02");
+    expect(memberFromRow({ ...insert, addresses: null })).toMatchObject({
+      deceased: true,
+      dateOfDeath: "2019-03-02",
+      dateOfBirth: "1956-12-18",
+    });
   });
 
   it("maps the household and the signed-in people", () => {

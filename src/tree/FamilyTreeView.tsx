@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { MemberAvatar } from "../directory/MemberAvatar";
+import { lifeYearLabel } from "../directory/memberDisplay";
 import { layoutFamilyTree, type TreeConnector } from "../lib/familyTree";
 import type { Member, MemberRelation } from "../types";
 
@@ -46,7 +47,7 @@ export function FamilyTreeView({
                       {row.people.map((placed) => {
                         const member = byId.get(placed.id);
                         if (!member) return null;
-                        const year = member.dateOfBirth?.slice(0, 4);
+                        const years = lifeYearLabel(member);
                         const label = labelFor(member);
                         return (
                           <div key={member.id} className="absolute top-0 px-2" style={{ left: placed.column * COLUMN, width: COLUMN }}>
@@ -56,7 +57,7 @@ export function FamilyTreeView({
                             >
                               <MemberAvatar firstName={member.firstName} lastName={member.lastName} photoUrl={member.photoUrl} />
                               <span className="mt-2 font-display text-base font-bold tracking-tight">{member.fullName}</span>
-                              {year ? <span className="text-xs text-stone-500">{year}</span> : null}
+                              {years ? <span className="text-xs text-stone-500">{years}</span> : null}
                               {label ? <span className="mt-1 text-xs font-semibold text-terracotta">{label}</span> : null}
                             </Link>
                           </div>

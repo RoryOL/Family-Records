@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router";
 import { formatLongDate } from "../lib/dates";
 import { MemberAvatar } from "./MemberAvatar";
-import { addressBadge, badgeClass, nextBirthdayLabel } from "./memberDisplay";
+import { isDeceased } from "../lib/members";
+import { addressBadge, badgeClass, deathSummary, nextBirthdayLabel } from "./memberDisplay";
 import type { Member } from "../types";
 
 export function MemberTable({ members, hrefFor, labelFor }: { members: readonly Member[]; hrefFor: (id: string) => string; labelFor?: (id: string) => string }) {
@@ -37,7 +38,9 @@ export function MemberTable({ members, hrefFor, labelFor }: { members: readonly 
           {members.map((member) => {
             const href = hrefFor(member.id);
             const badge = addressBadge(member.address);
-            const next = nextBirthdayLabel(member.dateOfBirth);
+            const remembered = isDeceased(member);
+            const next = remembered ? null : nextBirthdayLabel(member.dateOfBirth);
+            const died = remembered ? (member.dateOfDeath ? deathSummary(member) : "Deceased") : null;
             return (
               <tr
                 key={member.id}
@@ -50,11 +53,13 @@ export function MemberTable({ members, hrefFor, labelFor }: { members: readonly 
                     <Link to={href} className="underline-offset-2 hover:underline" onClick={(event) => event.stopPropagation()}>
                       {member.fullName}
                     </Link>
+                    {remembered ? <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-semibold text-stone-600">Deceased</span> : null}
                   </span>
                 </th>
                 <td className="px-5 py-4">{labelFor?.(member.id) || member.relationship || "—"}</td>
                 <td className="px-5 py-4">
                   <div>{member.dateOfBirth ? formatLongDate(member.dateOfBirth) : "—"}</div>
+                  {died ? <div className="text-stone-500">{died}</div> : null}
                   {next ? <div className="text-stone-500">{next}</div> : null}
                 </td>
                 <td className="px-5 py-4">{member.phone ?? "—"}</td>

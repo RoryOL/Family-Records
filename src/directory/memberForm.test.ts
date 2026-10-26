@@ -66,6 +66,55 @@ describe("member form", () => {
     expect(verified.phone).toBeNull();
   });
 
+  it("keeps a death date only while the person is recorded as deceased", () => {
+    const values = {
+      ...emptyFormValues(),
+      firstName: "Arthur",
+      dateOfBirth: "1956-12-18",
+      deceased: true,
+      dateOfDeath: "2019-03-02",
+    };
+    expect(validateMemberForm(values)).toEqual({});
+    expect(formValuesToDraft(values)).toMatchObject({ deceased: true, dateOfDeath: "2019-03-02" });
+
+    const cleared = formValuesToDraft({ ...values, deceased: false, dateOfDeath: "2019-03-02" });
+    expect(cleared.deceased).toBe(false);
+    expect(cleared.dateOfDeath).toBeNull();
+
+    const undated = formValuesToDraft({ ...emptyFormValues(), firstName: "Ruth", deceased: true });
+    expect(undated.deceased).toBe(true);
+    expect(undated.dateOfDeath).toBeNull();
+  });
+
+  it("rejects a death date before birth or an impossible day", () => {
+    expect(
+      validateMemberForm({
+        ...emptyFormValues(),
+        firstName: "Arthur",
+        dateOfBirth: "1956-12-18",
+        deceased: true,
+        dateOfDeath: "1950-01-01",
+      }).dateOfDeath,
+    ).toBe("Date of death is before the date of birth.");
+    expect(
+      validateMemberForm({
+        ...emptyFormValues(),
+        firstName: "Arthur",
+        deceased: true,
+        dateOfDeath: "2019-02-31",
+      }).dateOfDeath,
+    ).toBe("Enter a real date.");
+  });
+
+  it("round-trips a recorded death onto the form", () => {
+    const elena = createInitialState().members.find((member) => member.id === "mem_elena");
+    const remembered = { ...elena!, deceased: true, dateOfDeath: "2020-01-02" };
+    const values = memberToFormValues(remembered);
+    expect(values.deceased).toBe(true);
+    expect(values.dateOfDeath).toBe("2020-01-02");
+    expect(formValuesToDraft(values).dateOfDeath).toBe("2020-01-02");
+  });
+
   it("warns when the birthday is after today without blocking the date", () => {
     const today = new Date(2026, 8, 22);
     expect(dateWarning("2999-01-01", today)).toBe("This date is in the future.");

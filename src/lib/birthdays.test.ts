@@ -15,6 +15,8 @@ function named(dateOfBirth: string, fullName: string): Member {
     relationship: "Friend",
     gender: null,
     dateOfBirth,
+    deceased: false,
+    dateOfDeath: null,
     phone: null,
     email: null,
     address: null,
@@ -65,6 +67,15 @@ describe("upcomingBirthdays", () => {
     const member = named("1990-01-01", "Skipped");
     member.dateOfBirth = null;
     expect(upcomingBirthdays([member], 365, september21)).toEqual([]);
+  });
+
+  it("skips someone recorded as deceased, including a death date with no flag", () => {
+    const flagged = named("1986-09-23", "Flagged");
+    flagged.deceased = true;
+    const dated = named("1986-09-23", "Dated");
+    dated.deceased = false;
+    dated.dateOfDeath = "2020-01-02";
+    expect(upcomingBirthdays([flagged, dated], 365, september21)).toEqual([]);
   });
 });
 

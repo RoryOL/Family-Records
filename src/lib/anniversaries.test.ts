@@ -12,6 +12,8 @@ function member(id: string, fullName: string, dateOfBirth: string | null): Membe
     relationship: "",
     gender: null,
     dateOfBirth,
+    deceased: false,
+    dateOfDeath: null,
     phone: null,
     email: null,
     address: null,

@@ -29,6 +29,8 @@ describe("mailing export", () => {
       relationship: "Friend",
       gender: null,
       dateOfBirth: null,
+      deceased: false,
+      dateOfDeath: null,
       phone: null,
       email: null,
       address: {
@@ -54,5 +56,13 @@ describe("mailing export", () => {
     const csv = mailingCsv([member]);
     expect(csv.startsWith("\uFEFFName,Address line 1,Address line 2,Address line 3,Town/City,County/Region,Eircode/Postal code,Country\r\n")).toBe(true);
     expect(csv).toContain("'=Ada Lovelace,10 Downing Street,\"Apt, 4\",,London,Greater London,SW1A 2AA,United Kingdom");
+  });
+
+  it("leaves a verified address off the list when that person has died", () => {
+    const members = createInitialState().members.map((member) =>
+      member.id === "mem_elena" ? { ...member, deceased: true, dateOfDeath: "2024-01-01" } : member,
+    );
+    expect(verifiedMailingMembers(members).map((member) => member.fullName)).not.toContain("Elena Harper");
+    expect(mailingCsv(members)).not.toContain("Elena Harper");
   });
 });

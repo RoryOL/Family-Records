@@ -56,6 +56,9 @@ export interface Member {
   relationship: string;
   gender: Gender | null;
   dateOfBirth: IsoDate | null;
+  /** True when the household has recorded that this person has died. A date of death implies this. */
+  deceased: boolean;
+  dateOfDeath: IsoDate | null;
   phone: string | null;
   email: string | null;
   address: Address | null;
@@ -77,6 +80,8 @@ export interface MemberDraft {
   relationship: string;
   gender?: Gender | null;
   dateOfBirth: IsoDate | null;
+  deceased?: boolean;
+  dateOfDeath?: IsoDate | null;
   phone: string | null;
   email: string | null;
   address: AddressInput | null;
@@ -156,6 +161,8 @@ export type ImportTargetField =
   | "firstName"
   | "lastName"
   | "dateOfBirth"
+  | "dateOfDeath"
+  | "deceased"
   | "relationship"
   | "phone"
   | "email"

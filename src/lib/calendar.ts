@@ -1,4 +1,5 @@
 import { parseIsoDate } from "./dates";
+import { isDeceased } from "./members";
 import type { Member } from "../types";
 
 function icsEscape(value: string): string {
@@ -33,7 +34,7 @@ export function birthdayCalendar(members: readonly Member[], calendarName: strin
   ];
 
   for (const member of members) {
-    if (!member.dateOfBirth || !parseIsoDate(member.dateOfBirth)) continue;
+    if (isDeceased(member) || !member.dateOfBirth || !parseIsoDate(member.dateOfBirth)) continue;
     const summary = `${member.fullName}'s birthday`;
     const relationship = member.relationship.trim() || "family";
     lines.push(

@@ -1,4 +1,5 @@
 import { parseIsoDate, toIsoDate } from "./dates";
+import { isDeceased } from "./members";
 import type { BirthdayWindow, Member, UpcomingBirthday } from "../types";
 
 export function parseBirthdayWindow(value: string | null): BirthdayWindow {
@@ -66,7 +67,7 @@ export function upcomingBirthdays(
   const upcoming: UpcomingBirthday[] = [];
 
   for (const member of members) {
-    if (!member.dateOfBirth) continue;
+    if (isDeceased(member) || !member.dateOfBirth) continue;
     const next = nextBirthday(member.dateOfBirth, today);
     if (!next || next.daysUntil > withinDays) continue;
 

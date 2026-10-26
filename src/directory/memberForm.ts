@@ -12,6 +12,8 @@ export interface MemberFormValues {
   links: MemberLinkInput[];
   godparents: [GodparentSlot, GodparentSlot];
   dateOfBirth: string;
+  deceased: boolean;
+  dateOfDeath: string;
   phone: string;
   email: string;
   addressFormat: AddressFormat;
@@ -29,6 +31,7 @@ export interface MemberFormValues {
 export interface MemberFormErrors {
   firstName?: string;
   dateOfBirth?: string;
+  dateOfDeath?: string;
   email?: string;
   links?: string;
   godparents?: string;
@@ -43,6 +46,8 @@ export function emptyFormValues(): MemberFormValues {
     links: [],
     godparents: emptyGodparentSlots(),
     dateOfBirth: "",
+    deceased: false,
+    dateOfDeath: "",
     phone: "",
     email: "",
     addressFormat: "ie",
@@ -67,6 +72,8 @@ export function memberToFormValues(member: Member, links: readonly MemberLinkInp
     links: links.map((link) => ({ ...link })),
     godparents: slotsFromGodparents(member.id, godparents),
     dateOfBirth: member.dateOfBirth ?? "",
+    deceased: member.deceased || Boolean(member.dateOfDeath),
+    dateOfDeath: member.dateOfDeath ?? "",
     phone: member.phone ?? "",
     email: member.email ?? "",
     addressFormat: member.address?.format ?? "ie",
@@ -88,6 +95,14 @@ export function validateMemberForm(values: MemberFormValues, selfId?: string): M
 
   const dateOfBirth = values.dateOfBirth.trim();
   if (dateOfBirth && !parseIsoDate(dateOfBirth)) errors.dateOfBirth = "Enter a real date.";
+
+  if (values.deceased) {
+    const dateOfDeath = values.dateOfDeath.trim();
+    if (dateOfDeath && !parseIsoDate(dateOfDeath)) errors.dateOfDeath = "Enter a real date.";
+    else if (dateOfDeath && dateOfBirth && parseIsoDate(dateOfBirth) && dateOfDeath < dateOfBirth) {
+      errors.dateOfDeath = "Date of death is before the date of birth.";
+    }
+  }
 
   const email = values.email.trim();
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -127,6 +142,8 @@ export function formValuesToDraft(values: MemberFormValues, addressId?: string):
     relationship: values.relationship,
     gender: values.gender || null,
     dateOfBirth: values.dateOfBirth.trim() || null,
+    deceased: values.deceased,
+    dateOfDeath: values.deceased ? values.dateOfDeath.trim() || null : null,
     phone: values.phone.trim() || null,
     email: values.email.trim() || null,
     notes: values.notes,

@@ -205,7 +205,12 @@ export function ImportPage() {
                           <td className="px-4 py-3 font-display font-bold tracking-tight">
                             {plan.draft ? `${plan.draft.firstName} ${plan.draft.lastName}`.trim() : "—"}
                           </td>
-                          <td className="px-4 py-3">{plan.draft?.dateOfBirth ?? "—"}</td>
+                          <td className="px-4 py-3">
+                            <div>{plan.draft?.dateOfBirth ?? "—"}</div>
+                            {plan.draft?.deceased ? (
+                              <div className="text-stone-500">{plan.draft.dateOfDeath ? `Died ${plan.draft.dateOfDeath}` : "Deceased"}</div>
+                            ) : null}
+                          </td>
                           <td className="px-4 py-3">
                             {plan.issues.length === 0 ? (
                               <span className="text-stone-500">Ready</span>

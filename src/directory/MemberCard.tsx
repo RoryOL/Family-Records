@@ -1,12 +1,15 @@
 import { Link } from "react-router";
 import { formatLongDate } from "../lib/dates";
 import { MemberAvatar } from "./MemberAvatar";
-import { addressBadge, badgeClass, isBirthdaySoon, nextBirthdayLabel } from "./memberDisplay";
+import { isDeceased } from "../lib/members";
+import { addressBadge, badgeClass, deathSummary, isBirthdaySoon, nextBirthdayLabel } from "./memberDisplay";
 import type { Member } from "../types";
 
 export function MemberCard({ member, to, relationshipLabel }: { member: Member; to: string; relationshipLabel?: string }) {
-  const soon = isBirthdaySoon(member.dateOfBirth);
-  const next = nextBirthdayLabel(member.dateOfBirth);
+  const remembered = isDeceased(member);
+  const soon = !remembered && isBirthdaySoon(member.dateOfBirth);
+  const next = remembered ? null : nextBirthdayLabel(member.dateOfBirth);
+  const died = remembered && member.dateOfDeath ? deathSummary(member) : null;
   const badge = addressBadge(member.address);
 
   return (
@@ -25,10 +28,14 @@ export function MemberCard({ member, to, relationshipLabel }: { member: Member; 
                 {member.fullName}
               </Link>
             </h2>
-            <p className="mt-1 text-sm text-stone-500">{relationshipLabel || member.relationship || "No relationship"}</p>
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-stone-500">
+              <span>{relationshipLabel || member.relationship || "No relationship"}</span>
+              {remembered ? <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-semibold text-stone-600">Deceased</span> : null}
+            </p>
           </div>
         </div>
         <p className="mt-5 text-sm">{member.dateOfBirth ? formatLongDate(member.dateOfBirth) : "No birthday on file"}</p>
+        {died ? <p className="text-sm text-stone-500">{died}</p> : null}
         {next ? <p className={`text-sm font-semibold ${soon ? "text-honey" : "text-stone-500"}`}>{next}</p> : null}
         <p className="mt-5 text-sm">{member.phone ?? "No phone"}</p>
         <p className="break-words text-sm">{member.email ?? "No email"}</p>

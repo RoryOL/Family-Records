@@ -1,8 +1,9 @@
+import { isDeceased } from "./members";
 import type { Member } from "../types";
 
 export function verifiedMailingMembers(members: readonly Member[]): Member[] {
   return members
-    .filter((member) => member.address?.verified)
+    .filter((member) => member.address?.verified && !isDeceased(member))
     .slice()
     .sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName) || a.id.localeCompare(b.id));
 }

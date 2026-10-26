@@ -1,5 +1,6 @@
 import { ImagePlus } from "lucide-react";
 import { useEffect, useId, useRef, useState, type FormEvent, type Ref } from "react";
+import { yearsLived } from "../lib/members";
 import { photoProblem, type MemberPhotoSelection } from "../lib/memberPhoto";
 import { SUGGESTED_RELATIONSHIPS } from "../types";
 import { FamilyLinksField } from "./FamilyLinksField";
@@ -52,10 +53,13 @@ export function MemberForm({
   const firstNameRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
+  const deathRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const tags = [...new Set([...suggestions, ...SUGGESTED_RELATIONSHIPS])].sort((a, b) => a.localeCompare(b));
   const warning = dateWarning(values.dateOfBirth);
-  const next = nextBirthdayLabel(values.dateOfBirth.trim() || null);
+  const next = values.deceased ? null : nextBirthdayLabel(values.dateOfBirth.trim() || null);
+  const deathWarning = values.deceased ? dateWarning(values.dateOfDeath) : null;
+  const lived = values.deceased ? yearsLived(values.dateOfBirth.trim() || null, values.dateOfDeath.trim() || null) : null;
 
   const showingSaved = hasPhoto && !photoRemoved && !photoFile;
   const displayUrl = photoFile ? previewUrl : showingSaved ? photoUrl : null;
@@ -89,6 +93,7 @@ export function MemberForm({
     setErrors(nextErrors);
     if (nextErrors.firstName) firstNameRef.current?.focus();
     else if (nextErrors.dateOfBirth) dateRef.current?.focus();
+    else if (nextErrors.dateOfDeath) deathRef.current?.focus();
     else if (nextErrors.email) emailRef.current?.focus();
     if (hasFormErrors(nextErrors)) return;
     onSave(formValuesToDraft(values, addressId), { file: photoFile, remove: photoRemoved && !photoFile }, values.links, values.godparents);
@@ -219,6 +224,40 @@ export function MemberForm({
         />
         {!errors.dateOfBirth && warning ? <p className="mt-1 text-sm text-honey">{warning}</p> : null}
         {!errors.dateOfBirth && next ? <p className="mt-1 text-sm text-stone-500">{next}</p> : null}
+      </div>
+      <div>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="size-4 accent-terracotta"
+            checked={values.deceased}
+            aria-describedby={`${baseId}-deceased-hint`}
+            onChange={(event) => {
+              const deceased = event.target.checked;
+              setValues((current) => ({ ...current, deceased, dateOfDeath: deceased ? current.dateOfDeath : "" }));
+            }}
+          />
+          Deceased
+        </label>
+        <p id={`${baseId}-deceased-hint`} className="mt-1 text-sm text-stone-500">
+          Birthdays and greeting cards leave this person out.
+        </p>
+        {values.deceased ? (
+          <div className="mt-4">
+            <TextField
+              id={`${baseId}-dod`}
+              label="Date of death"
+              type="date"
+              value={values.dateOfDeath}
+              error={errors.dateOfDeath}
+              inputRef={deathRef}
+              onChange={(value) => update("dateOfDeath", value)}
+            />
+            {!errors.dateOfDeath && deathWarning ? <p className="mt-1 text-sm text-honey">{deathWarning}</p> : null}
+            {!errors.dateOfDeath && lived === 0 ? <p className="mt-1 text-sm text-stone-500">Died at less than a year</p> : null}
+            {!errors.dateOfDeath && lived != null && lived > 0 ? <p className="mt-1 text-sm text-stone-500">Died at {lived}</p> : null}
+          </div>
+        ) : null}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField
