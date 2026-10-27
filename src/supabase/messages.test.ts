@@ -15,6 +15,12 @@ describe("friendlySupabaseMessage", () => {
       "That record is already in the household.",
     );
     expect(friendlySupabaseMessage('relation "secret" does not exist')).toBe("That could not be saved. Try again.");
+    expect(friendlySupabaseMessage("Could not find the 'date_of_death' column of 'members' in the schema cache")).toBe(
+      "Run the deceased members migration in the Supabase SQL editor, then try again.",
+    );
+    expect(friendlySupabaseMessage("Could not find the 'deceased' column of 'members' in the schema cache")).toBe(
+      "Run the deceased members migration in the Supabase SQL editor, then try again.",
+    );
     expect(friendlySupabaseMessage("Could not find the 'photo_path' column of 'members' in the schema cache")).toBe(
       "Run the member photos migration in the Supabase SQL editor, then try again.",
     );

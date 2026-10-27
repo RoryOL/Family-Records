@@ -27,6 +27,8 @@ describe("createMember", () => {
     expect(member.fullName).toBe("Ada Lovelace");
     expect(member.familyGroupId).toBe("grp_harpers");
     expect(member.dateOfBirth).toBeNull();
+    expect(member.deceased).toBe(false);
+    expect(member.dateOfDeath).toBeNull();
     expect(member.phone).toBeNull();
     expect(member.email).toBeNull();
     expect(member.notes).toBe("note");
@@ -73,6 +75,54 @@ describe("createMember", () => {
       notes: "",
     });
     expect(member.fullName).toBe("Mary Ann Evans");
+  });
+});
+
+describe("recorded death", () => {
+  it("treats a death date as deceased and drops an impossible date", () => {
+    const member = createMember("grp", {
+      firstName: "Arthur",
+      lastName: "Ellison",
+      relationship: "Parent",
+      dateOfBirth: "1956-12-18",
+      dateOfDeath: "2019-03-02",
+      phone: null,
+      email: null,
+      address: null,
+      notes: "",
+    });
+    expect(member.deceased).toBe(true);
+    expect(member.dateOfDeath).toBe("2019-03-02");
+
+    const flagged = createMember("grp", {
+      firstName: "Ruth",
+      lastName: "Ellison",
+      relationship: "",
+      dateOfBirth: null,
+      deceased: true,
+      dateOfDeath: "2019-02-31",
+      phone: null,
+      email: null,
+      address: null,
+      notes: "",
+    });
+    expect(flagged.deceased).toBe(true);
+    expect(flagged.dateOfDeath).toBeNull();
+  });
+
+  it("keeps a recorded death when other fields change and clears it when the flag is removed", () => {
+    const elena = { ...createInitialState().members[0], deceased: true, dateOfDeath: "2020-01-02" };
+    const kept = mergeMember(elena, { notes: "Updated" }, "2026-09-21T00:00:00.000Z");
+    expect(kept.deceased).toBe(true);
+    expect(kept.dateOfDeath).toBe("2020-01-02");
+
+    const living = mergeMember(kept, { deceased: false }, "2026-09-22T00:00:00.000Z");
+    expect(living.deceased).toBe(false);
+    expect(living.dateOfDeath).toBeNull();
+
+    const undated = mergeMember(elena, { dateOfDeath: null }, "2026-09-23T00:00:00.000Z");
+    expect(undated.deceased).toBe(true);
+    expect(undated.dateOfDeath).toBeNull();
   });
 });
 

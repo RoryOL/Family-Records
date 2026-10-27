@@ -6,7 +6,8 @@ import { describedGodchildren, describedGodparents, type NamedPerson } from "../
 import { formatLongDate } from "../lib/dates";
 import type { KinshipLine } from "../lib/kinship";
 import { MemberAvatar } from "./MemberAvatar";
-import { addressBadge, badgeClass, nextBirthdayLabel } from "./memberDisplay";
+import { isDeceased } from "../lib/members";
+import { addressBadge, ageAtDeathLabel, badgeClass, nextBirthdayLabel } from "./memberDisplay";
 import { labelClass } from "./styles";
 import type { FamilyUser, Godparent, Member, MemberRelation } from "../types";
 
@@ -26,7 +27,9 @@ export function MemberProfile({
   household?: readonly Member[];
 }) {
   const badge = addressBadge(member.address);
-  const next = nextBirthdayLabel(member.dateOfBirth);
+  const remembered = isDeceased(member);
+  const next = remembered ? null : nextBirthdayLabel(member.dateOfBirth);
+  const age = remembered ? ageAtDeathLabel(member.dateOfBirth, member.dateOfDeath) : null;
   const login = people.find((person) => person.id === member.linkedUserId);
   const address = member.address ? formatAddressBlock(member.address) : "";
   const eircode = member.address?.format === "ie" ? lookupEircode(member.address.postalCode) : null;
@@ -41,6 +44,7 @@ export function MemberProfile({
   return (
     <div>
       <MemberAvatar firstName={member.firstName} lastName={member.lastName} photoUrl={member.photoUrl} size="lg" />
+      {remembered ? <p className="mt-4 text-sm font-semibold text-stone-600">Deceased</p> : null}
       <dl className="mt-6 grid gap-5">
       <div>
         <dt className={labelClass}>Relationships</dt>
@@ -84,8 +88,11 @@ export function MemberProfile({
           <dd className="mt-1 text-sm">{member.dateOfBirth ? formatLongDate(member.dateOfBirth) : "—"}</dd>
         </div>
         <div>
-          <dt className={labelClass}>Next birthday</dt>
-          <dd className="mt-1 text-sm">{next ?? "No birthday on file"}</dd>
+          <dt className={labelClass}>{remembered ? "Date of death" : "Next birthday"}</dt>
+          <dd className="mt-1 text-sm">
+            {remembered ? (member.dateOfDeath ? formatLongDate(member.dateOfDeath) : "Date not recorded") : (next ?? "No birthday on file")}
+          </dd>
+          {age ? <p className="mt-1 text-sm text-stone-500">{age}</p> : null}
         </div>
       </div>
       <div className="grid gap-5 sm:grid-cols-2">

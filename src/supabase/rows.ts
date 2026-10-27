@@ -40,6 +40,9 @@ export interface MemberRow {
   /** Absent on rows loaded before the gender column existed. */
   gender?: string | null;
   date_of_birth: string | null;
+  /** Absent on rows loaded before a household could record a death. */
+  deceased?: boolean | null;
+  date_of_death?: string | null;
   phone: string | null;
   email: string | null;
   notes: string;
@@ -60,6 +63,8 @@ export interface MemberInsert {
   relationship: string;
   gender: string | null;
   date_of_birth: string | null;
+  deceased: boolean;
+  date_of_death: string | null;
   phone: string | null;
   email: string | null;
   notes: string;
@@ -135,6 +140,8 @@ export function memberFromRow(row: MemberRow): Member {
     relationship: row.relationship,
     gender: row.gender === "female" || row.gender === "male" ? row.gender : null,
     dateOfBirth: row.date_of_birth ? row.date_of_birth.slice(0, 10) : null,
+    dateOfDeath: row.date_of_death ? row.date_of_death.slice(0, 10) : null,
+    deceased: row.deceased === true || Boolean(row.date_of_death),
     phone: row.phone,
     email: row.email,
     address: address ? addressFromRow(address) : null,
@@ -157,6 +164,8 @@ export function memberToInsert(member: Member): MemberInsert {
     relationship: member.relationship,
     gender: member.gender,
     date_of_birth: member.dateOfBirth,
+    deceased: member.deceased || Boolean(member.dateOfDeath),
+    date_of_death: member.dateOfDeath,
     phone: member.phone,
     email: member.email,
     notes: member.notes,

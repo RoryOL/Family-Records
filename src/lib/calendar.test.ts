@@ -18,6 +18,15 @@ describe("birthdayCalendar", () => {
     expect(calendar.endsWith("END:VCALENDAR\r\n")).toBe(true);
   });
 
+  it("leaves a deceased person out of the yearly birthday calendar", () => {
+    const members = createInitialState().members.map((member) =>
+      member.id === "mem_marcus" ? { ...member, deceased: true, dateOfDeath: "2024-01-02" } : member,
+    );
+    const calendar = birthdayCalendar(members, "The Harpers");
+    expect(calendar).not.toContain("Marcus Harper");
+    expect(calendar.split("BEGIN:VEVENT").length - 1).toBe(9);
+  });
+
   it("escapes commas and semicolons in names", () => {
     const member: Member = {
       id: "mem_comma",
@@ -28,6 +37,8 @@ describe("birthdayCalendar", () => {
       relationship: "Friend",
       gender: null,
       dateOfBirth: "1990-01-02",
+      deceased: false,
+      dateOfDeath: null,
       phone: null,
       email: null,
       address: null,

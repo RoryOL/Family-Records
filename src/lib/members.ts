@@ -24,6 +24,36 @@ function normalizeDate(value: string | null): string | null {
   return trimmed;
 }
 
+/** A date of death means the person is deceased, even if the flag was left off. Clearing the flag drops the date. */
+function recordedLife(
+  input: { deceased?: boolean; dateOfDeath?: string | null },
+  current?: { deceased: boolean; dateOfDeath: string | null },
+): { deceased: boolean; dateOfDeath: string | null } {
+  const dateProvided = input.dateOfDeath !== undefined;
+  const flagProvided = input.deceased !== undefined;
+  const dateOfDeath = dateProvided ? normalizeDate(input.dateOfDeath ?? null) : (current?.dateOfDeath ?? null);
+
+  if (flagProvided && input.deceased !== true) return { deceased: false, dateOfDeath: null };
+  if (dateOfDeath) return { deceased: true, dateOfDeath };
+  if (flagProvided || current?.deceased) return { deceased: true, dateOfDeath: null };
+  return { deceased: false, dateOfDeath: null };
+}
+
+export function isDeceased(member: { deceased: boolean; dateOfDeath: string | null }): boolean {
+  return member.deceased || Boolean(member.dateOfDeath);
+}
+
+/** Whole years from birth to death. Less than a year is 0. A death before birth is omitted. */
+export function yearsLived(dateOfBirth: string | null, dateOfDeath: string | null): number | null {
+  if (!dateOfBirth || !dateOfDeath) return null;
+  const birth = parseIsoDate(dateOfBirth);
+  const death = parseIsoDate(dateOfDeath);
+  if (!birth || !death) return null;
+  let years = death.year - birth.year;
+  if (death.month < birth.month || (death.month === birth.month && death.day < birth.day)) years -= 1;
+  return years >= 0 ? years : null;
+}
+
 function isIreland(country: string): boolean {
   const name = country.trim().toLowerCase();
   return name === "ireland" || name === "éire" || name === "eire" || name === "ie";
@@ -61,6 +91,7 @@ export function createMember(familyGroupId: string, draft: MemberDraft, now = ne
     relationship: draft.relationship.trim(),
     gender: draft.gender === "female" || draft.gender === "male" ? draft.gender : null,
     dateOfBirth: normalizeDate(draft.dateOfBirth),
+    ...recordedLife({ deceased: draft.deceased, dateOfDeath: draft.dateOfDeath }),
     phone: blankToNull(draft.phone),
     email: blankToNull(draft.email),
     address: draft.address ? normalizeAddress(draft.address) : null,
@@ -92,6 +123,7 @@ export function mergeMember(member: Member, patch: MemberPatch, updatedAt: strin
     relationship: patch.relationship !== undefined ? patch.relationship.trim() : member.relationship,
     gender: patch.gender !== undefined ? (patch.gender === "female" || patch.gender === "male" ? patch.gender : null) : member.gender,
     dateOfBirth: patch.dateOfBirth !== undefined ? normalizeDate(patch.dateOfBirth) : member.dateOfBirth,
+    ...recordedLife({ deceased: patch.deceased, dateOfDeath: patch.dateOfDeath }, member),
     phone: patch.phone !== undefined ? blankToNull(patch.phone) : member.phone,
     email: patch.email !== undefined ? blankToNull(patch.email) : member.email,
     address: patch.address !== undefined ? (patch.address ? normalizeAddress(patch.address) : null) : member.address,

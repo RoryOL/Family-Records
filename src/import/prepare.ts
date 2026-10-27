@@ -7,6 +7,8 @@ export const IMPORT_TARGETS: { value: ImportTargetField | "ignore"; label: strin
   { value: "firstName", label: "First name" },
   { value: "lastName", label: "Last name" },
   { value: "dateOfBirth", label: "Date of birth" },
+  { value: "dateOfDeath", label: "Date of death" },
+  { value: "deceased", label: "Deceased" },
   { value: "relationship", label: "Relationship" },
   { value: "phone", label: "Phone" },
   { value: "email", label: "Email" },
@@ -25,6 +27,8 @@ const HEADER_HINTS: { target: ImportTargetField; pattern: RegExp }[] = [
   { target: "firstName", pattern: /^(first[\s_-]?name|given[\s_-]?name|forename)$/i },
   { target: "lastName", pattern: /^(last[\s_-]?name|surname|family[\s_-]?name)$/i },
   { target: "dateOfBirth", pattern: /^(dob|birthday|birth[\s_-]?date|date[\s_-]?of[\s_-]?birth)$/i },
+  { target: "dateOfDeath", pattern: /^(dod|died|death[\s_-]?date|date[\s_-]?of[\s_-]?death)$/i },
+  { target: "deceased", pattern: /^(deceased)$/i },
   { target: "relationship", pattern: /^(relationship|relation)$/i },
   { target: "phone", pattern: /^(phone|mobile|tel|telephone)$/i },
   { target: "email", pattern: /^(e-?mail)$/i },
@@ -77,7 +81,17 @@ export function previewImport(
       issues.push({ rowNumber: row.rowNumber, field: "firstName", message: "Enter a first name.", severity: "error" });
     }
 
-    const dateOfBirth = readDate(values.dateOfBirth ?? "", row.rowNumber, issues, today);
+    const dateOfBirth = readDate(values.dateOfBirth ?? "", row.rowNumber, issues, today, "dateOfBirth");
+    const dateOfDeath = readDate(values.dateOfDeath ?? "", row.rowNumber, issues, today, "dateOfDeath");
+    const deceasedFlag = readDeceased(values.deceased ?? "", row.rowNumber, issues);
+    if (dateOfBirth && dateOfDeath && dateOfDeath < dateOfBirth) {
+      issues.push({
+        rowNumber: row.rowNumber,
+        field: "dateOfDeath",
+        message: "Date of death is before the date of birth.",
+        severity: "error",
+      });
+    }
     const email = readEmail(values.email ?? "", row.rowNumber, issues);
     const address = readAddress(values);
     if (address) applyEircodeLookup(address, row.rowNumber, issues);
@@ -103,6 +117,8 @@ export function previewImport(
             lastName,
             relationship: values.relationship?.trim() ?? "",
             dateOfBirth,
+            deceased: Boolean(dateOfDeath) || deceasedFlag,
+            dateOfDeath,
             phone: values.phone?.trim() || null,
             email,
             notes: values.notes?.trim() ?? "",
@@ -143,14 +159,20 @@ function readTargets(
   return values;
 }
 
-function readDate(value: string, rowNumber: number, issues: ImportIssue[], today: Date): string | null {
+function readDate(
+  value: string,
+  rowNumber: number,
+  issues: ImportIssue[],
+  today: Date,
+  field: "dateOfBirth" | "dateOfDeath",
+): string | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
   const iso = parseImportDate(trimmed);
   if (!iso) {
     issues.push({
       rowNumber,
-      field: "dateOfBirth",
+      field,
       message: `“${trimmed}” is not a date. Use a day/month/year or YYYY-MM-DD.`,
       severity: "error",
     });
@@ -162,10 +184,24 @@ function readDate(value: string, rowNumber: number, issues: ImportIssue[], today
     const date = new Date(parsed.year, parsed.month - 1, parsed.day);
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     if (date.getTime() > start.getTime()) {
-      issues.push({ rowNumber, field: "dateOfBirth", message: "This date is in the future.", severity: "warning" });
+      issues.push({ rowNumber, field, message: "This date is in the future.", severity: "warning" });
     }
   }
   return iso;
+}
+
+function readDeceased(value: string, rowNumber: number, issues: ImportIssue[]): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  if (/^(y|yes|true|1)$/i.test(trimmed)) return true;
+  if (/^(n|no|false|0)$/i.test(trimmed)) return false;
+  issues.push({
+    rowNumber,
+    field: "deceased",
+    message: `“${trimmed}” is not a yes or no. Use yes or no.`,
+    severity: "error",
+  });
+  return false;
 }
 
 /** Day-first dates, plus ISO. A value such as 05/06/2020 is 5 June 2020. */

@@ -75,6 +75,8 @@ const aoife: Member = {
   relationship: "Cousin",
   gender: null,
   dateOfBirth: null,
+  deceased: false,
+  dateOfDeath: null,
   phone: null,
   email: null,
   notes: "",

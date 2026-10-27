@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createInitialState } from "../data/mockFamily";
-import { addressBadge, initialsFrom, isBirthdaySoon, nextBirthdayLabel } from "./memberDisplay";
+import { addressBadge, deathSummary, initialsFrom, isBirthdaySoon, lifeYearLabel, nextBirthdayLabel } from "./memberDisplay";
 
 const september22 = new Date(2026, 8, 22);
 
@@ -17,6 +17,16 @@ describe("member display", () => {
     expect(initialsFrom("Elena", "Harper")).toBe("EH");
     expect(initialsFrom(" Aoife ", "")).toBe("A");
     expect(initialsFrom("  ", " ")).toBe("?");
+  });
+
+  it("shows a life span and age once a death is recorded", () => {
+    const living = { deceased: false, dateOfBirth: "1956-12-18", dateOfDeath: null };
+    const remembered = { deceased: true, dateOfBirth: "1956-12-18", dateOfDeath: "2019-03-02" };
+    expect(lifeYearLabel(living)).toBe("1956");
+    expect(lifeYearLabel(remembered)).toBe("1956–2019");
+    expect(lifeYearLabel({ deceased: true, dateOfBirth: null, dateOfDeath: null })).toBe("Deceased");
+    expect(deathSummary(remembered)).toBe("Died Mar 2, 2019 at 62");
+    expect(deathSummary(living)).toBeNull();
   });
 
   it("marks incomplete addresses and verified cities differently", () => {

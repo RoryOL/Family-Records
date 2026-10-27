@@ -26,6 +26,9 @@ export function friendlySupabaseMessage(message: string, code?: string): string 
   if (/sign in before/i.test(text)) {
     return text;
   }
+  if (/date_of_death|'deceased' column/i.test(text)) {
+    return "Run the deceased members migration in the Supabase SQL editor, then try again.";
+  }
   if (/wedding_date|godparents|member_relations_married_date|member_relations_kind/i.test(text)) {
     return "Run the weddings, godparents, and marriage migrations in the Supabase SQL editor, then try again.";
   }

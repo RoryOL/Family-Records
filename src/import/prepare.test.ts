@@ -33,6 +33,11 @@ describe("suggestMappings", () => {
       "notes",
       "ignore",
     ]);
+    expect(suggestMappings(["Date of death", "Deceased", "Died"]).map((item) => item.target)).toEqual([
+      "dateOfDeath",
+      "deceased",
+      "ignore",
+    ]);
     expect(suggestMappings(["Town/City", "County/Region", "Eircode/Postal code"]).map((item) => item.target)).toEqual([
       "city",
       "region",
@@ -84,6 +89,29 @@ describe("previewImport", () => {
     ]);
     expect(plans[1]?.draft).toBeNull();
     expect(plans[1]?.issues.map((issue) => issue.field)).toEqual(["dateOfBirth", "email"]);
+  });
+
+  it("records a death date, and blocks a death before birth or a vague deceased cell", () => {
+    const headers = ["First Name", "DOB", "Date of death", "Deceased"];
+    const mappings = suggestMappings(headers);
+    const plans = previewImport(
+      headers,
+      [
+        { rowNumber: 2, cells: ["Arthur", "18/12/1956", "02/03/2019", ""] },
+        { rowNumber: 3, cells: ["Ruth", "02/11/1958", "", "yes"] },
+        { rowNumber: 4, cells: ["Nora", "19/01/1991", "01/01/1990", "no"] },
+        { rowNumber: 5, cells: ["Helen", "", "", "passed"] },
+      ],
+      mappings,
+      [],
+      today,
+    );
+    expect(plans[0]?.draft).toMatchObject({ deceased: true, dateOfBirth: "1956-12-18", dateOfDeath: "2019-03-02" });
+    expect(plans[1]?.draft).toMatchObject({ deceased: true, dateOfDeath: null });
+    expect(plans[2]?.draft).toBeNull();
+    expect(plans[2]?.issues.map((issue) => issue.message)).toContain("Date of death is before the date of birth.");
+    expect(plans[3]?.draft).toBeNull();
+    expect(plans[3]?.issues.map((issue) => issue.field)).toEqual(["deceased"]);
   });
 
   it("fills a blank town and county from an Eircode", () => {
