@@ -26,7 +26,7 @@ export function FamilyTreeView({
   if (layout.components.length === 0) {
     return (
       <div className="mt-8">
-        <p className="text-sm text-stone-500">Add a parent, child, sibling, or partner on a profile to grow the tree.</p>
+        <p className="text-sm text-stone-500">Add a parent, child, sibling, partner, or marriage on a profile to grow the tree.</p>
         <Unlinked members={members} ids={layout.unlinkedIds} hrefFor={hrefFor} />
       </div>
     );

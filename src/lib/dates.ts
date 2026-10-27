@@ -13,6 +13,14 @@ export function toIsoDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+/** True when `birthDate` is a later calendar day than `than`. A missing or invalid date is not younger. */
+export function isYoungerThan(birthDate: string | null | undefined, than: string | null | undefined): boolean {
+  const birth = birthDate?.trim() ?? "";
+  const other = than?.trim() ?? "";
+  if (!parseIsoDate(birth) || !parseIsoDate(other)) return false;
+  return birth > other;
+}
+
 export function parseIsoDate(value: string): CalendarDate | null {
   const match = ISO_DATE.exec(value);
   if (!match) return null;

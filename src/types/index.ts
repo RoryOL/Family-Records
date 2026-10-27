@@ -15,11 +15,11 @@ export type FamilyRole = "owner" | "editor";
 /** Used to choose niece or nephew, brother or sister, and the other paired terms. */
 export type Gender = "female" | "male";
 
-/** Stored link. Parent points from parent to child. Partner and sibling links are stored once. */
-export type RelationKind = "parent" | "spouse" | "sibling";
+/** Stored link. Parent points from parent to child. Partner, marriage, and sibling links are stored once. */
+export type RelationKind = "parent" | "spouse" | "married" | "sibling";
 
 /** How the person being edited is related to someone already in the household. */
-export type LinkRole = "parent" | "child" | "sibling" | "spouse";
+export type LinkRole = "parent" | "child" | "sibling" | "spouse" | "married";
 
 /** Irish layout is the household default. International keeps street, region, and country. */
 export type AddressFormat = "ie" | "international";
@@ -96,14 +96,15 @@ export interface MemberRelation {
   fromMemberId: string;
   toMemberId: string;
   kind: RelationKind;
-  /** Set only on a partner link. */
+  /** Set only on a marriage. Partner links do not keep a date. */
   weddingDate: IsoDate | null;
 }
 
-/** One row in the member form: this person is the parent, child, sibling, or partner of someone else. */
+/** One row in the member form: this person is the parent, child, sibling, partner, or spouse of someone else. */
 export interface MemberLinkInput {
   otherId: string;
   role: LinkRole;
+  /** Marriage date. Used only when the role is married. */
   weddingDate?: string;
 }
 

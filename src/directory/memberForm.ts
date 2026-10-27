@@ -89,7 +89,11 @@ export function memberToFormValues(member: Member, links: readonly MemberLinkInp
   };
 }
 
-export function validateMemberForm(values: MemberFormValues, selfId?: string): MemberFormErrors {
+export function validateMemberForm(
+  values: MemberFormValues,
+  selfId?: string,
+  people: readonly { id: string; dateOfBirth?: string | null }[] = [],
+): MemberFormErrors {
   const errors: MemberFormErrors = {};
   if (!values.firstName.trim()) errors.firstName = "Enter a first name.";
 
@@ -112,7 +116,7 @@ export function validateMemberForm(values: MemberFormValues, selfId?: string): M
   const links = linkProblem(values.links);
   if (links) errors.links = links;
 
-  const godparents = godparentProblem(values.godparents, selfId);
+  const godparents = godparentProblem(values.godparents, selfId, people, values.dateOfBirth);
   if (godparents) errors.godparents = godparents;
 
   return errors;

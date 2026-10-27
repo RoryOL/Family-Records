@@ -276,15 +276,15 @@ export const mockFamily: FamilyState = {
   ],
 };
 
-/** Parent, partner, and sibling links for the Harper sample, matched by full name after import. */
+/** Parent, partner, marriage, and sibling links for the Harper sample, matched by full name after import. */
 export function harperLinkPlan(): { fromName: string; toName: string; kind: RelationKind; weddingDate?: string }[] {
   return [
-    { fromName: "Arthur Ellison", toName: "Ruth Ellison", kind: "spouse", weddingDate: "1979-06-21" },
+    { fromName: "Arthur Ellison", toName: "Ruth Ellison", kind: "married", weddingDate: "1979-06-21" },
     { fromName: "Arthur Ellison", toName: "Elena Harper", kind: "parent" },
     { fromName: "Ruth Ellison", toName: "Elena Harper", kind: "parent" },
     { fromName: "Arthur Ellison", toName: "Nora Blake", kind: "parent" },
     { fromName: "Ruth Ellison", toName: "Nora Blake", kind: "parent" },
-    { fromName: "Elena Harper", toName: "Marcus Harper", kind: "spouse", weddingDate: "2014-09-23" },
+    { fromName: "Elena Harper", toName: "Marcus Harper", kind: "married", weddingDate: "2014-09-23" },
     { fromName: "Elena Harper", toName: "Jonah Harper", kind: "parent" },
     { fromName: "Marcus Harper", toName: "Jonah Harper", kind: "parent" },
     { fromName: "Elena Harper", toName: "Willa Harper", kind: "parent" },

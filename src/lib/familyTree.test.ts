@@ -29,7 +29,7 @@ describe("layoutFamilyTree", () => {
     person("chris", "2001-03-14"),
   ];
   const relations = [
-    link("arthur", "ruth", "spouse"),
+    link("arthur", "ruth", "married"),
     link("arthur", "elena", "parent"),
     link("ruth", "elena", "parent"),
     link("arthur", "nora", "parent"),

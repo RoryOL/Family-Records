@@ -36,7 +36,7 @@ export function MemberForm({
   suggestions: readonly string[];
   photoUrl?: string | null;
   hasPhoto?: boolean;
-  people?: readonly { id: string; fullName: string }[];
+  people?: readonly { id: string; fullName: string; dateOfBirth?: string | null }[];
   selfId?: string;
   onSave: (draft: MemberDraft, photo: MemberPhotoSelection, links: MemberLinkInput[], godparents: MemberFormValues["godparents"]) => void;
   onDirtyChange: (dirty: boolean) => void;
@@ -89,7 +89,7 @@ export function MemberForm({
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextErrors = validateMemberForm(values, selfId);
+    const nextErrors = validateMemberForm(values, selfId, people);
     setErrors(nextErrors);
     if (nextErrors.firstName) firstNameRef.current?.focus();
     else if (nextErrors.dateOfBirth) dateRef.current?.focus();
@@ -197,7 +197,13 @@ export function MemberForm({
         error={errors.links}
         onChange={(links) => update("links", links)}
       />
-      <GodparentsField slots={values.godparents} people={people} error={errors.godparents} onChange={(godparents) => update("godparents", godparents)} />
+      <GodparentsField
+        slots={values.godparents}
+        people={people}
+        subjectDateOfBirth={values.dateOfBirth}
+        error={errors.godparents}
+        onChange={(godparents) => update("godparents", godparents)}
+      />
       <TextField
         id={`${baseId}-relationship`}
         label="Label"

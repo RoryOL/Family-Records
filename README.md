@@ -19,8 +19,9 @@ In the Supabase SQL editor, run these files in order:
 - `supabase/migrations/20261013120000_member_relations.sql` adds links between people so the family tree can name brothers, nieces, and nephews
 - `supabase/migrations/20261013120000_app_releases.sql` lets the phone download a newer APK
 - `supabase/migrations/20261014120000_own_profile.sql` links the signed-in account to one person in the household
-- `supabase/migrations/20261026120000_weddings_godparents.sql` adds wedding dates on partner links and two godparents for each person
+- `supabase/migrations/20261026120000_weddings_godparents.sql` adds wedding dates and two godparents for each person
 - `supabase/migrations/20261026130000_deceased_members.sql` records when someone has died, and the date of death when it is known
+- `supabase/migrations/20261026230000_married_relationship.sql` keeps partner, adds a marriage with the marriage date, and leaves younger people off the godparent list
 
 Under Authentication → URL configuration, set the site URL to this app so confirmation links return here.
 

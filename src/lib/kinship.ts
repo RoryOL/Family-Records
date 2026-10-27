@@ -15,7 +15,7 @@ export interface KinshipLine {
   distance: number;
 }
 
-type Step = "parent" | "child" | "sibling" | "spouse";
+type Step = "parent" | "child" | "sibling" | "partner" | "married";
 
 interface Edge {
   id: string;
@@ -30,13 +30,19 @@ export function linkProblem(links: readonly MemberLinkInput[]): string | null {
     const key = `${link.role}:${link.otherId}`;
     if (seen.has(key)) return "That relationship is already listed.";
     seen.add(key);
-    if (link.role === "spouse" && link.weddingDate?.trim() && !parseIsoDate(link.weddingDate.trim())) {
-      return "Enter a real wedding date.";
+    if (link.role === "married" && link.weddingDate?.trim() && !parseIsoDate(link.weddingDate.trim())) {
+      return "Enter a real marriage date.";
     }
   }
   for (const link of links) {
     if (link.role === "parent" && links.some((other) => other.otherId === link.otherId && other.role === "child")) {
       return "Those two parent links point at each other.";
+    }
+    if (
+      (link.role === "spouse" || link.role === "married") &&
+      links.some((other) => other !== link && other.otherId === link.otherId && (other.role === "spouse" || other.role === "married"))
+    ) {
+      return "Record that pair as partner or married, not both.";
     }
   }
   return null;
@@ -49,9 +55,13 @@ export function linksTouching(memberId: string, relations: readonly MemberRelati
       links.push({ otherId: relation.toMemberId, role: "parent" });
     } else if (relation.kind === "parent" && relation.toMemberId === memberId) {
       links.push({ otherId: relation.fromMemberId, role: "child" });
-    } else if (relation.kind === "spouse" && (relation.fromMemberId === memberId || relation.toMemberId === memberId)) {
+    } else if ((relation.kind === "spouse" || relation.kind === "married") && (relation.fromMemberId === memberId || relation.toMemberId === memberId)) {
       const otherId = relation.fromMemberId === memberId ? relation.toMemberId : relation.fromMemberId;
-      links.push({ otherId, role: "spouse", weddingDate: relation.weddingDate ?? "" });
+      links.push(
+        relation.kind === "married"
+          ? { otherId, role: "married", weddingDate: relation.weddingDate ?? "" }
+          : { otherId, role: "spouse" },
+      );
     } else if (relation.kind === "sibling" && relation.fromMemberId === memberId) {
       links.push({ otherId: relation.toMemberId, role: "sibling" });
     } else if (relation.kind === "sibling" && relation.toMemberId === memberId) {
@@ -80,7 +90,9 @@ export function relationFromLink(familyGroupId: string, memberId: string, link: 
   if (!link.otherId || link.otherId === memberId) return null;
   if (link.role === "parent") return makeRelation(familyGroupId, memberId, link.otherId, "parent");
   if (link.role === "child") return makeRelation(familyGroupId, link.otherId, memberId, "parent");
-  return makeRelation(familyGroupId, memberId, link.otherId, link.role, link.weddingDate);
+  if (link.role === "sibling") return makeRelation(familyGroupId, memberId, link.otherId, "sibling");
+  if (link.role === "spouse") return makeRelation(familyGroupId, memberId, link.otherId, "spouse");
+  return makeRelation(familyGroupId, memberId, link.otherId, "married", link.weddingDate);
 }
 
 export function makeRelation(
@@ -92,7 +104,7 @@ export function makeRelation(
 ): MemberRelation | null {
   if (fromMemberId === toMemberId) return null;
   const [from, to] = kind === "parent" || fromMemberId < toMemberId ? [fromMemberId, toMemberId] : [toMemberId, fromMemberId];
-  const date = kind === "spouse" && weddingDate && parseIsoDate(weddingDate.trim()) ? weddingDate.trim() : null;
+  const date = kind === "married" && weddingDate && parseIsoDate(weddingDate.trim()) ? weddingDate.trim() : null;
   return {
     id: globalThis.crypto?.randomUUID?.() ?? `rel_${from}_${to}_${kind}`,
     familyGroupId,
@@ -210,14 +222,16 @@ function modelFamily(people: readonly { id: string }[], relations: readonly Memb
   const known = new Set(ids);
   const recorded = new Map<string, Set<string>>(ids.map((id) => [id, new Set()]));
   const explicitSiblings: [string, string][] = [];
-  const spousePairs: [string, string][] = [];
+  const couplePairs: [string, string, "partner" | "married"][] = [];
 
   for (const relation of relations) {
     if (!known.has(relation.fromMemberId) || !known.has(relation.toMemberId)) continue;
     if (relation.fromMemberId === relation.toMemberId) continue;
     if (relation.kind === "parent") recorded.get(relation.toMemberId)?.add(relation.fromMemberId);
     else if (relation.kind === "sibling") explicitSiblings.push([relation.fromMemberId, relation.toMemberId]);
-    else if (relation.kind === "spouse") spousePairs.push([relation.fromMemberId, relation.toMemberId]);
+    else if (relation.kind === "spouse" || relation.kind === "married") {
+      couplePairs.push([relation.fromMemberId, relation.toMemberId, relation.kind === "married" ? "married" : "partner"]);
+    }
   }
 
   const parentOf = new Map(ids.map((id) => [id, id]));
@@ -288,9 +302,9 @@ function modelFamily(people: readonly { id: string }[], relations: readonly Memb
     add(left, right, "sibling");
     add(right, left, "sibling");
   }
-  for (const [left, right] of spousePairs) {
-    add(left, right, "spouse");
-    add(right, left, "spouse");
+  for (const [left, right, step] of couplePairs) {
+    add(left, right, step);
+    add(right, left, step);
     spousesOf.get(left)?.push(right);
     spousesOf.get(right)?.push(left);
   }
@@ -311,8 +325,8 @@ function bestPath(from: string, to: string, edges: Map<string, Edge[]>): Step[] 
 
     for (const edge of edges.get(current.id) ?? []) {
       const steps = [...current.steps, edge.step];
-      const spouses = steps.filter((step) => step === "spouse").length;
-      const cost = steps.length * 10 + spouses;
+      const couples = steps.filter((step) => step === "partner" || step === "married").length;
+      const cost = steps.length * 10 + couples;
       const previous = seen.get(edge.id);
       if (previous !== undefined && previous <= cost) continue;
       seen.set(edge.id, cost);
@@ -322,8 +336,12 @@ function bestPath(from: string, to: string, edges: Map<string, Edge[]>): Step[] 
   return null;
 }
 
+function isCouple(step: Step | undefined): step is "partner" | "married" {
+  return step === "partner" || step === "married";
+}
+
 function labelForPath(steps: readonly Step[], gender: Gender | null): string | null {
-  if (steps.length === 0 || steps.includes("spouse")) return inLawLabel(steps, gender);
+  if (steps.length === 0 || steps.some(isCouple)) return coupleLabel(steps, gender);
   return bloodLabel(steps, gender);
 }
 
@@ -357,16 +375,18 @@ function bloodLabel(steps: readonly Step[], gender: Gender | null): string | nul
   return null;
 }
 
-function inLawLabel(steps: readonly Step[], gender: Gender | null): string | null {
-  if (steps.length === 1 && steps[0] === "spouse") return gendered(gender, "Wife", "Husband", "Partner");
-  if (steps.length === 2 && steps[0] === "parent" && steps[1] === "spouse") return gendered(gender, "Stepmother", "Stepfather", "Stepparent");
-  if (steps.length === 2 && steps[0] === "spouse" && steps[1] === "child") return gendered(gender, "Stepdaughter", "Stepson", "Stepchild");
+function coupleLabel(steps: readonly Step[], gender: Gender | null): string | null {
+  if (steps.length === 1 && steps[0] === "partner") return "Partner";
+  if (steps.length === 1 && steps[0] === "married") return gendered(gender, "Wife", "Husband", "Spouse");
+  if (steps.length === 2 && steps[0] === "parent" && isCouple(steps[1])) return gendered(gender, "Stepmother", "Stepfather", "Stepparent");
+  // A child of a partner or spouse is a son or daughter, including further descendants.
+  if (isCouple(steps[0]) && steps.slice(1).every((step) => step === "child")) return descendantLabel(steps.length - 1, gender);
 
-  if (steps[0] === "spouse") {
+  if (steps[0] === "married") {
     const blood = bloodLabel(steps.slice(1), gender);
     return blood ? inLawOf(blood) : null;
   }
-  if (steps.at(-1) === "spouse") {
+  if (steps.at(-1) === "married") {
     const blood = bloodLabel(steps.slice(0, -1), gender);
     return blood ? inLawOf(blood) : null;
   }

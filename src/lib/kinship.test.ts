@@ -71,21 +71,43 @@ describe("kinship", () => {
     const relations = [
       link("gran", "pat", "parent"),
       link("gran", "uncle", "parent"),
-      link("pat", "mary", "spouse"),
+      link("pat", "mary", "married"),
       link("pat", "aoife", "parent"),
       link("mary", "aoife", "parent"),
       link("uncle", "cousin", "parent"),
       link("aoife", "partner", "spouse"),
+      link("aoife", "husband", "married"),
     ];
-    const named = [...family, person("uncle", "Uncle", "male")];
+    const named = [...family, person("uncle", "Uncle", "male"), person("husband", "Hugh", "male")];
     expect(kinshipTerm("mary", "aoife", named, relations)).toBe("Mother");
     expect(kinshipTerm("pat", "aoife", named, relations)).toBe("Father");
     expect(kinshipTerm("gran", "aoife", named, relations)).toBe("Grandmother");
     expect(kinshipTerm("aoife", "mary", named, relations)).toBe("Daughter");
     expect(kinshipTerm("uncle", "aoife", named, relations)).toBe("Uncle");
     expect(kinshipTerm("cousin", "aoife", named, relations)).toBe("Cousin");
-    expect(kinshipTerm("partner", "aoife", named, relations)).toBe("Husband");
-    expect(kinshipTerm("partner", "mary", named, relations)).toBe("Son-in-law");
+    expect(kinshipTerm("partner", "aoife", named, relations)).toBe("Partner");
+    expect(kinshipTerm("partner", "mary", named, relations)).toBeNull();
+    expect(kinshipTerm("husband", "aoife", named, relations)).toBe("Husband");
+    expect(kinshipTerm("husband", "mary", named, relations)).toBe("Son-in-law");
+  });
+
+  it("calls a partner's or spouse's child a son or daughter", () => {
+    const family = [
+      person("aoife", "Aoife", "female"),
+      person("alex", "Alex", "male"),
+      person("hugh", "Hugh", "male"),
+      person("sam", "Sam", "male"),
+      person("nia", "Nia", "female"),
+    ];
+    const relations = [
+      link("aoife", "alex", "spouse"),
+      link("alex", "sam", "parent"),
+      link("aoife", "hugh", "married"),
+      link("hugh", "nia", "parent"),
+    ];
+    expect(kinshipTerm("sam", "aoife", family, relations)).toBe("Son");
+    expect(kinshipTerm("nia", "aoife", family, relations)).toBe("Daughter");
+    expect(kinshipTerm("aoife", "sam", family, relations)).toBe("Stepmother");
   });
 
   it("treats siblings who share a parent as brothers even without an extra sibling link", () => {
@@ -109,11 +131,19 @@ describe("member links", () => {
     expect(stored[0]).toMatchObject({ fromMemberId: "cian", toMemberId: "saoirse", kind: "parent" });
   });
 
-  it("keeps a wedding date on a partner link and reads it from either person", () => {
-    const stored = applyMemberLinks([], "grp", "elena", [{ otherId: "marcus", role: "spouse", weddingDate: "2014-09-23" }]);
-    expect(stored[0]).toMatchObject({ kind: "spouse", weddingDate: "2014-09-23" });
-    expect(linksTouching("marcus", stored)).toEqual([{ otherId: "elena", role: "spouse", weddingDate: "2014-09-23" }]);
-    expect(linkProblem([{ otherId: "marcus", role: "spouse", weddingDate: "2014-02-31" }])).toBe("Enter a real wedding date.");
+  it("keeps a marriage date on a married link and leaves a partner without one", () => {
+    const stored = applyMemberLinks([], "grp", "elena", [
+      { otherId: "marcus", role: "married", weddingDate: "2014-09-23" },
+      { otherId: "alex", role: "spouse", weddingDate: "2001-01-01" },
+    ]);
+    expect(stored.find((relation) => relation.kind === "married")).toMatchObject({ kind: "married", weddingDate: "2014-09-23" });
+    expect(stored.find((relation) => relation.kind === "spouse")).toMatchObject({ kind: "spouse", weddingDate: null });
+    expect(linksTouching("marcus", stored)).toEqual([{ otherId: "elena", role: "married", weddingDate: "2014-09-23" }]);
+    expect(linksTouching("alex", stored)).toEqual([{ otherId: "elena", role: "spouse" }]);
+    expect(linkProblem([{ otherId: "marcus", role: "married", weddingDate: "2014-02-31" }])).toBe("Enter a real marriage date.");
+    expect(linkProblem([{ otherId: "marcus", role: "married" }, { otherId: "marcus", role: "spouse" }])).toBe(
+      "Record that pair as partner or married, not both.",
+    );
   });
 
   it("rejects a blank person, a duplicate, and parent links that point both ways", () => {

@@ -2,10 +2,11 @@ import type { LinkRole, MemberLinkInput } from "../types";
 import { inputClass, labelClass } from "./styles";
 
 const roles: { value: LinkRole; label: string }[] = [
-  { value: "parent", label: "parent" },
-  { value: "child", label: "child" },
-  { value: "sibling", label: "sibling" },
-  { value: "spouse", label: "partner" },
+  { value: "parent", label: "the parent of" },
+  { value: "child", label: "the child of" },
+  { value: "sibling", label: "the sibling of" },
+  { value: "spouse", label: "the partner of" },
+  { value: "married", label: "married to" },
 ];
 
 export function FamilyLinksField({
@@ -29,21 +30,22 @@ export function FamilyLinksField({
     <fieldset className="grid gap-3">
       <legend className={labelClass}>Relationships</legend>
       <p className="text-sm text-stone-500">
-        Record how this person is related to someone else. A brother&apos;s children are then nieces and nephews.
+        Record how this person is related to someone else. A brother&apos;s children are nieces and nephews. A partner&apos;s child is a son or daughter.
+        Only a marriage has a marriage date.
       </p>
       {ordered.length === 0 ? (
         <p className="text-sm text-stone-500">Save another person, then you can record how they are related.</p>
       ) : (
         links.map((link, index) => (
           <div key={`${index}-${link.otherId}`} className="flex flex-wrap items-center gap-2">
-            <span className="text-sm">This person is the</span>
+            <span className="text-sm">This person is</span>
             <select
               aria-label={`Relationship ${index + 1}`}
               className={`${inputClass} mt-0 w-auto`}
               value={link.role}
               onChange={(event) => {
                 const role = event.target.value as LinkRole;
-                update(index, { role, weddingDate: role === "spouse" ? link.weddingDate : "" });
+                update(index, { role, weddingDate: role === "married" ? link.weddingDate : "" });
               }}
             >
               {roles.map((role) => (
@@ -52,7 +54,6 @@ export function FamilyLinksField({
                 </option>
               ))}
             </select>
-            <span className="text-sm">of</span>
             <select
               aria-label={`Related person ${index + 1}`}
               className={`${inputClass} mt-0 min-w-40 flex-1`}
@@ -73,11 +74,11 @@ export function FamilyLinksField({
             >
               Remove
             </button>
-            {link.role === "spouse" ? (
+            {link.role === "married" ? (
               <label className="grid basis-full gap-1 text-sm sm:max-w-xs">
-                Wedding date
+                Marriage date
                 <input
-                  aria-label={`Wedding date ${index + 1}`}
+                  aria-label={`Marriage date ${index + 1}`}
                   type="date"
                   className={`${inputClass} mt-0`}
                   value={link.weddingDate ?? ""}

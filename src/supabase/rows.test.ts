@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createMember } from "../lib/members";
-import { addressToInsert, ensureMemberIds, groupFromRow, memberFromRow, memberToInsert, normalizeInviteCode, userFromRow } from "./rows";
+import { addressToInsert, ensureMemberIds, groupFromRow, memberFromRow, memberToInsert, normalizeInviteCode, relationFromRow, relationToInsert, userFromRow } from "./rows";
 
 describe("household rows", () => {
   it("maps a member and an Irish address in both directions", () => {
@@ -141,6 +141,30 @@ describe("household rows", () => {
         joined_at: "2026-09-22T12:00:00.000Z",
       }).role,
     ).toBe("editor");
+  });
+
+  it("reads a dated partner row as a marriage and writes the date only for married", () => {
+    const married = relationFromRow({
+      id: "rel-1",
+      family_group_id: "grp",
+      from_member_id: "elena",
+      to_member_id: "marcus",
+      kind: "spouse",
+      wedding_date: "2014-09-23",
+    });
+    expect(married).toMatchObject({ kind: "married", weddingDate: "2014-09-23" });
+    expect(relationToInsert(married!).wedding_date).toBe("2014-09-23");
+
+    const partner = relationFromRow({
+      id: "rel-2",
+      family_group_id: "grp",
+      from_member_id: "elena",
+      to_member_id: "alex",
+      kind: "spouse",
+      wedding_date: null,
+    });
+    expect(partner).toMatchObject({ kind: "spouse", weddingDate: null });
+    expect(relationToInsert({ ...partner!, weddingDate: "2001-01-01" }).wedding_date).toBeNull();
   });
 
   it("normalizes invite codes typed with spaces or a missing dash", () => {
