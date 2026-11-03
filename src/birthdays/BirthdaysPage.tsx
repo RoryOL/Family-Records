@@ -7,6 +7,7 @@ import { birthdayTiming, parseBirthdayWindow, upcomingBirthdays } from "../lib/b
 import { formatLongDate, formatToday } from "../lib/dates";
 import { downloadFile, fileSlug } from "../lib/download";
 import { MemberAvatar } from "../directory/MemberAvatar";
+import { memberPath } from "../directory/paths";
 import { focusMemberId, relationshipSummary } from "../lib/kinship";
 import { isDeceased } from "../lib/members";
 import { pageClass, secondaryButtonClass, surfaceClass } from "../directory/styles";
@@ -27,7 +28,7 @@ export function BirthdaysPage() {
   const undatedWeddings = weddingsWithoutDates(members, relations);
 
   useEffect(() => {
-    document.title = `Birthdays · ${group.name} · Family Records`;
+    document.title = `Home · ${group.name} · Family Records`;
   }, [group.name]);
 
   function chooseWindow(window: BirthdayWindow) {
@@ -50,7 +51,7 @@ export function BirthdaysPage() {
       <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">{group.name}</p>
-          <h1 className="mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">Birthdays</h1>
+          <h1 className="mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">Home</h1>
           <p className="mt-3 max-w-xl text-stone-500">Upcoming birthdays and wedding anniversaries as of {formatToday()}.</p>
         </div>
         <button type="button" className={secondaryButtonClass} onClick={downloadCalendar}>
@@ -96,7 +97,7 @@ export function BirthdaysPage() {
             return (
               <li key={item.memberId}>
                 <Link
-                  to={`/members/${encodeURIComponent(item.memberId)}`}
+                  to={memberPath(item.memberId)}
                   className={`flex flex-col gap-3 rounded-3xl border px-6 py-6 text-stone-850 no-underline shadow-warm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between sm:px-8 ${
                     soon ? "border-amber-200/80 bg-gradient-to-r from-amber-500/10 to-orange-500/10" : "border-stone-200/60 bg-white"
                   }`}
@@ -138,11 +139,11 @@ export function BirthdaysPage() {
                     }`}
                   >
                     <span>
-                      <Link className="font-display text-2xl font-bold tracking-tight text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(item.leftId)}`}>
+                      <Link className="font-display text-2xl font-bold tracking-tight text-stone-850 underline decoration-amber-300 underline-offset-2" to={memberPath(item.leftId)}>
                         {item.label.split(" and ")[0]}
                       </Link>
                       <span className="font-display text-2xl font-bold tracking-tight"> and </span>
-                      <Link className="font-display text-2xl font-bold tracking-tight text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(item.rightId)}`}>
+                      <Link className="font-display text-2xl font-bold tracking-tight text-stone-850 underline decoration-amber-300 underline-offset-2" to={memberPath(item.rightId)}>
                         {item.label.split(" and ")[1]}
                       </Link>
                       <span className="mt-1 block text-sm text-stone-500">
@@ -169,7 +170,7 @@ export function BirthdaysPage() {
           {undated.map((member, index) => (
             <span key={member.id}>
               {index > 0 ? ", " : null}
-              <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(member.id)}`}>
+              <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={memberPath(member.id)}>
                 {member.fullName}
               </Link>
             </span>

@@ -5,7 +5,7 @@ import { listRelationships } from "./filters";
 import { MemberForm } from "./MemberForm";
 import { emptyFormValues, memberToFormValues } from "./memberForm";
 import { MemberProfile } from "./MemberProfile";
-import { withSearch, withoutEdit } from "./paths";
+import { directoryPath, memberPath, withSearch, withoutEdit } from "./paths";
 import { primaryButtonClass, secondaryButtonClass } from "./styles";
 import { kinshipLines, linksTouching } from "../lib/kinship";
 import type { MemberPhotoSelection } from "../lib/memberPhoto";
@@ -49,9 +49,9 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
   function performClose(target: CloseTarget) {
     const search = withoutEdit(searchParams);
     if (target === "view" && memberId) {
-      navigate(withSearch(`/members/${encodeURIComponent(memberId)}`, search), { replace: true });
+      navigate(withSearch(memberPath(memberId), search), { replace: true });
     } else {
-      navigate(withSearch("/", search));
+      navigate(withSearch(directoryPath, search));
     }
     setPending(null);
   }
@@ -84,7 +84,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
     try {
       if (intent === "create") {
         const created = await addMember(draft, photo.file, links, sponsors);
-        navigate(withSearch(`/members/${encodeURIComponent(created.id)}`, withoutEdit(searchParams)), { replace: true });
+        navigate(withSearch(memberPath(created.id), withoutEdit(searchParams)), { replace: true });
         return;
       }
       if (!member) return;
@@ -103,7 +103,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
     setSaveError(null);
     try {
       await removeMember(member.id);
-      navigate(withSearch("/", withoutEdit(searchParams)));
+      navigate(withSearch(directoryPath, withoutEdit(searchParams)));
     } catch (error) {
       setPending(null);
       setSaveError(error instanceof Error ? error.message : "That person could not be removed.");
@@ -226,7 +226,7 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
   function startEdit(id: string) {
     const next = new URLSearchParams(searchParams);
     next.set("edit", "1");
-    navigate(withSearch(`/members/${encodeURIComponent(id)}`, next));
+    navigate(withSearch(memberPath(id), next));
   }
 }
 

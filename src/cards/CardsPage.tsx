@@ -2,6 +2,7 @@ import { Copy, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { MemberAvatar } from "../directory/MemberAvatar";
+import { memberPath } from "../directory/paths";
 import { focusMemberId, relationshipSummary } from "../lib/kinship";
 import { pageClass, primaryButtonClass, secondaryButtonClass, surfaceClass } from "../directory/styles";
 import { formatAddressBlock, formatMailingLabels } from "../lib/address";
@@ -97,7 +98,7 @@ export function CardsPage() {
                       <MemberAvatar firstName={member.firstName} lastName={member.lastName} photoUrl={member.photoUrl} />
                       <div className="min-w-0">
                         <h2 className="font-display text-xl font-bold tracking-tight">
-                          <Link className="text-stone-850 underline decoration-transparent underline-offset-2 hover:decoration-amber-300" to={`/members/${encodeURIComponent(member.id)}`}>
+                          <Link className="text-stone-850 underline decoration-transparent underline-offset-2 hover:decoration-amber-300" to={memberPath(member.id)}>
                             {member.fullName}
                           </Link>
                         </h2>
@@ -124,7 +125,7 @@ export function CardsPage() {
           {skipped.map((member, index) => (
             <span key={member.id}>
               {index > 0 ? ", " : null}
-              <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(member.id)}`}>
+              <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={memberPath(member.id)}>
                 {member.fullName}
               </Link>
             </span>
@@ -139,7 +140,7 @@ export function CardsPage() {
           {remembered.map((member, index) => (
             <span key={member.id}>
               {index > 0 ? ", " : null}
-              <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(member.id)}`}>
+              <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={memberPath(member.id)}>
                 {member.fullName}
               </Link>
             </span>

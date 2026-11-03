@@ -20,17 +20,17 @@ export function AppShell() {
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <nav aria-label="Primary" className="flex flex-wrap gap-2">
+              <ShellLink href="/" current={pathname === "/"}>
+                Home
+              </ShellLink>
               <ShellLink href="/me" current={pathname.startsWith("/me")}>
                 You
               </ShellLink>
-              <ShellLink href="/" current={pathname === "/" || pathname.startsWith("/members")}>
+              <ShellLink href="/directory" current={pathname === "/directory" || pathname.startsWith("/directory/")}>
                 Directory
               </ShellLink>
               <ShellLink href="/tree" current={pathname.startsWith("/tree")}>
                 Tree
-              </ShellLink>
-              <ShellLink href="/birthdays" current={pathname.startsWith("/birthdays")}>
-                Birthdays
               </ShellLink>
               <ShellLink href="/cards" current={pathname.startsWith("/cards")}>
                 Mailing

@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { MemberAvatar } from "../directory/MemberAvatar";
+import { memberPath } from "../directory/paths";
 import { anniversaryPhrase, upcomingAnniversaries } from "../lib/anniversaries";
 import { birthdayTiming, upcomingBirthdays } from "../lib/birthdays";
 import { useFamily } from "../store/FamilyProvider";
@@ -23,7 +24,7 @@ export function BirthdayBanner({ onDismiss }: { onDismiss: () => void }) {
                   const person = members.find((member) => member.id === item.memberId);
                   return (
                     <li key={item.memberId}>
-                      <Link className="inline-flex items-center gap-2 font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(item.memberId)}`}>
+                      <Link className="inline-flex items-center gap-2 font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={memberPath(item.memberId)}>
                         {person ? <MemberAvatar firstName={person.firstName} lastName={person.lastName} photoUrl={person.photoUrl} size="sm" /> : null}
                         {item.fullName}
                       </Link>{" "}
@@ -71,12 +72,12 @@ function CoupleNames({
   const right = members.find((member) => member.id === rightId);
   return (
     <>
-      <Link className="inline-flex items-center gap-2 font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(leftId)}`}>
+      <Link className="inline-flex items-center gap-2 font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={memberPath(leftId)}>
         {left ? <MemberAvatar firstName={left.firstName} lastName={left.lastName} photoUrl={left.photoUrl} size="sm" /> : null}
         {leftName}
       </Link>{" "}
       and{" "}
-      <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(rightId)}`}>
+      <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={memberPath(rightId)}>
         {right?.fullName ?? rightName}
       </Link>
     </>

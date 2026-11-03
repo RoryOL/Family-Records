@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { focusMemberId, relationshipSummary } from "../lib/kinship";
+import { memberPath } from "../directory/paths";
 import { pageClass } from "../directory/styles";
 import { useFamily } from "../store/FamilyProvider";
 import { FamilyTreeView } from "./FamilyTreeView";
@@ -23,7 +24,7 @@ export function FamilyTreePage() {
       <FamilyTreeView
         members={members}
         relations={relations}
-        hrefFor={(id) => `/members/${encodeURIComponent(id)}`}
+        hrefFor={(id) => memberPath(id)}
         labelFor={(member) => relationshipSummary({ id: member.id, fullName: member.fullName, gender: member.gender }, people, relations, focusId, member.relationship)}
       />
     </main>
