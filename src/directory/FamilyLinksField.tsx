@@ -4,6 +4,8 @@ import { inputClass, labelClass } from "./styles";
 const roles: { value: LinkRole; label: string }[] = [
   { value: "parent", label: "the parent of" },
   { value: "child", label: "the child of" },
+  { value: "stepparent", label: "the step-parent of" },
+  { value: "stepchild", label: "the step-child of" },
   { value: "sibling", label: "the sibling of" },
   { value: "spouse", label: "the partner of" },
   { value: "married", label: "married to" },
@@ -30,8 +32,9 @@ export function FamilyLinksField({
     <fieldset className="grid gap-3">
       <legend className={labelClass}>Relationships</legend>
       <p className="text-sm text-stone-500">
-        Record how this person is related to someone else. A brother&apos;s children are nieces and nephews. A partner&apos;s child is a son or daughter.
-        Only a marriage has a marriage date.
+        Record how this person is related to someone else. A brother&apos;s children are nieces and nephews. A partner&apos;s or spouse&apos;s child is a
+        son or daughter, and the partner or spouse of a parent is a mother or father. Record a step-parent when that is the relationship you
+        want. Only a marriage has a marriage date.
       </p>
       {ordered.length === 0 ? (
         <p className="text-sm text-stone-500">Save another person, then you can record how they are related.</p>

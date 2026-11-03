@@ -165,6 +165,17 @@ describe("household rows", () => {
     });
     expect(partner).toMatchObject({ kind: "spouse", weddingDate: null });
     expect(relationToInsert({ ...partner!, weddingDate: "2001-01-01" }).wedding_date).toBeNull();
+
+    const step = relationFromRow({
+      id: "rel-3",
+      family_group_id: "grp",
+      from_member_id: "fionn",
+      to_member_id: "niamh",
+      kind: "step",
+      wedding_date: "2014-09-23",
+    });
+    expect(step).toMatchObject({ kind: "step", fromMemberId: "fionn", toMemberId: "niamh", weddingDate: null });
+    expect(relationToInsert(step!).wedding_date).toBeNull();
   });
 
   it("normalizes invite codes typed with spaces or a missing dash", () => {

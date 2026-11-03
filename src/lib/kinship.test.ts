@@ -13,7 +13,8 @@ function person(id: string, fullName: string, gender: Gender | null = null): Per
 }
 
 function link(from: string, to: string, kind: MemberRelation["kind"]): MemberRelation {
-  const [fromMemberId, toMemberId] = kind === "parent" || from < to ? [from, to] : [to, from];
+  const directed = kind === "parent" || kind === "step";
+  const [fromMemberId, toMemberId] = directed || from < to ? [from, to] : [to, from];
   return { id: `${kind}-${fromMemberId}-${toMemberId}`, familyGroupId: "grp", fromMemberId, toMemberId, kind, weddingDate: null };
 }
 
@@ -107,7 +108,35 @@ describe("kinship", () => {
     ];
     expect(kinshipTerm("sam", "aoife", family, relations)).toBe("Son");
     expect(kinshipTerm("nia", "aoife", family, relations)).toBe("Daughter");
-    expect(kinshipTerm("aoife", "sam", family, relations)).toBe("Stepmother");
+    expect(kinshipTerm("aoife", "sam", family, relations)).toBe("Mother");
+    expect(kinshipTerm("aoife", "nia", family, relations)).toBe("Mother");
+  });
+
+  it("calls the husband, wife, or partner of a parent a parent, and a recorded step link a step-parent", () => {
+    const family = [
+      person("gran", "Gran", "female"),
+      person("mother", "Maeve", "female"),
+      person("father", "Fionn", "male"),
+      person("me", "Niamh", "female"),
+      person("partner", "Alex"),
+    ];
+    const married = [
+      link("mother", "me", "parent"),
+      link("father", "mother", "married"),
+      link("gran", "father", "parent"),
+    ];
+    expect(kinshipTerm("father", "me", family, married)).toBe("Father");
+    expect(kinshipTerm("me", "father", family, married)).toBe("Daughter");
+    expect(kinshipTerm("gran", "me", family, married)).toBe("Grandmother");
+    expect(kinshipTerm("me", "gran", family, married)).toBe("Granddaughter");
+
+    const partnered = [link("mother", "me", "parent"), link("partner", "mother", "spouse")];
+    expect(kinshipTerm("partner", "me", family, partnered)).toBe("Parent");
+    expect(kinshipTerm("me", "partner", family, partnered)).toBe("Daughter");
+
+    const step = [...married, link("father", "me", "step")];
+    expect(kinshipTerm("father", "me", family, step)).toBe("Stepfather");
+    expect(kinshipTerm("me", "father", family, step)).toBe("Stepdaughter");
   });
 
   it("treats siblings who share a parent as brothers even without an extra sibling link", () => {
@@ -131,6 +160,16 @@ describe("member links", () => {
     expect(stored[0]).toMatchObject({ fromMemberId: "cian", toMemberId: "saoirse", kind: "parent" });
   });
 
+  it("stores a step-parent link from the step-parent to the child and reads it back", () => {
+    const stored = applyMemberLinks([], "grp", "fionn", [{ otherId: "niamh", role: "stepparent" }]);
+    expect(stored[0]).toMatchObject({ fromMemberId: "fionn", toMemberId: "niamh", kind: "step" });
+    expect(linksTouching("fionn", stored)).toEqual([{ otherId: "niamh", role: "stepparent" }]);
+    expect(linksTouching("niamh", stored)).toEqual([{ otherId: "fionn", role: "stepchild" }]);
+
+    const fromChild = applyMemberLinks([], "grp", "niamh", [{ otherId: "fionn", role: "stepchild" }]);
+    expect(fromChild[0]).toMatchObject({ fromMemberId: "fionn", toMemberId: "niamh", kind: "step" });
+  });
+
   it("keeps a marriage date on a married link and leaves a partner without one", () => {
     const stored = applyMemberLinks([], "grp", "elena", [
       { otherId: "marcus", role: "married", weddingDate: "2014-09-23" },
@@ -150,6 +189,12 @@ describe("member links", () => {
     expect(linkProblem([{ otherId: "", role: "sibling" }])).toBe("Choose the person this relationship is with.");
     expect(linkProblem([{ otherId: "cian", role: "sibling" }, { otherId: "cian", role: "sibling" }])).toBe("That relationship is already listed.");
     expect(linkProblem([{ otherId: "cian", role: "parent" }, { otherId: "cian", role: "child" }])).toBe("Those two parent links point at each other.");
+    expect(linkProblem([{ otherId: "cian", role: "stepparent" }, { otherId: "cian", role: "stepchild" }])).toBe(
+      "Those two parent links point at each other.",
+    );
+    expect(linkProblem([{ otherId: "cian", role: "parent" }, { otherId: "cian", role: "stepparent" }])).toBe(
+      "Record that person as a parent or a step-parent, not both.",
+    );
     expect(linkProblem([{ otherId: "cian", role: "sibling" }])).toBeNull();
   });
 });

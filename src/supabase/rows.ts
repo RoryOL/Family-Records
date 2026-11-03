@@ -223,7 +223,7 @@ export function relationFromRow(row: RelationRow): MemberRelation | null {
   // A partner row that already has a wedding date is a marriage. Reading it that way keeps the date
   // if this household has not run the marriage migration yet.
   const kindName = row.kind === "spouse" && row.wedding_date ? "married" : row.kind;
-  if (kindName !== "parent" && kindName !== "spouse" && kindName !== "married" && kindName !== "sibling") return null;
+  if (kindName !== "parent" && kindName !== "step" && kindName !== "spouse" && kindName !== "married" && kindName !== "sibling") return null;
   const kind: RelationKind = kindName;
   const weddingDate = kind === "married" && row.wedding_date ? row.wedding_date.slice(0, 10) : null;
   return {

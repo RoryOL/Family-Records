@@ -22,7 +22,10 @@ describe("relationship fields", () => {
       />,
     );
     expect(html).toContain("the partner of");
+    expect(html).toContain("the step-parent of");
+    expect(html).toContain("the step-child of");
     expect(html).toContain("married to");
+    expect(html).toContain("the partner or spouse of a parent is a mother or father");
     expect(html).toContain("Marriage date");
     expect(html).toContain('value="2014-09-23"');
     expect(html.match(/type="date"/g)).toHaveLength(1);
