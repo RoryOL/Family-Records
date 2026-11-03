@@ -11,18 +11,31 @@ const roles: { value: LinkRole; label: string }[] = [
   { value: "married", label: "married to" },
 ];
 
+/** Signed-in person first, then everyone else by name, so a new relationship starts from you. */
+export function orderRelationshipPeople<T extends { id: string; fullName: string }>(people: readonly T[], focusId?: string | null): T[] {
+  return [...people].sort((left, right) => {
+    const leftSelf = left.id === focusId ? 0 : 1;
+    const rightSelf = right.id === focusId ? 0 : 1;
+    if (leftSelf !== rightSelf) return leftSelf - rightSelf;
+    return left.fullName.localeCompare(right.fullName) || left.id.localeCompare(right.id);
+  });
+}
+
 export function FamilyLinksField({
   links,
   people,
+  focusId = null,
   error,
   onChange,
 }: {
   links: readonly MemberLinkInput[];
   people: readonly { id: string; fullName: string }[];
+  /** Member id of the signed-in person, when they are one of the choices. */
+  focusId?: string | null;
   error?: string;
   onChange: (links: MemberLinkInput[]) => void;
 }) {
-  const ordered = [...people].sort((left, right) => left.fullName.localeCompare(right.fullName) || left.id.localeCompare(right.id));
+  const ordered = orderRelationshipPeople(people, focusId);
 
   function update(index: number, patch: Partial<MemberLinkInput>) {
     onChange(links.map((link, linkIndex) => (linkIndex === index ? { ...link, ...patch } : link)));
@@ -66,7 +79,7 @@ export function FamilyLinksField({
               <option value="">Choose a person</option>
               {ordered.map((person) => (
                 <option key={person.id} value={person.id}>
-                  {person.fullName}
+                  {person.id === focusId ? `${person.fullName} (you)` : person.fullName}
                 </option>
               ))}
             </select>

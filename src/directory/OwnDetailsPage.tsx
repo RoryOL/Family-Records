@@ -8,6 +8,7 @@ import { MemberForm } from "./MemberForm";
 import { memberToFormValues } from "./memberForm";
 import { MemberProfile } from "./MemberProfile";
 import { withoutEdit } from "./paths";
+import { familySurname, surnameChoices } from "./surnames";
 import { pageClass, primaryButtonClass, secondaryButtonClass, surfaceClass } from "./styles";
 
 export function OwnDetailsPage() {
@@ -16,6 +17,11 @@ export function OwnDetailsPage() {
   const editing = searchParams.get("edit") === "1";
   const selfId = focusMemberId(members, currentUser.id);
   const self = selfId ? members.find((member) => member.id === selfId) : undefined;
+  const familyName = familySurname(members, currentUser);
+  const surnames = surnameChoices(
+    members.map((member) => member.lastName),
+    familyName,
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -72,6 +78,9 @@ export function OwnDetailsPage() {
             people={members
               .filter((member) => member.id !== self?.id)
               .map((member) => ({ id: member.id, fullName: member.fullName, dateOfBirth: member.dateOfBirth }))}
+            focusId={selfId}
+            familyName={familyName}
+            surnames={surnames}
             suggestions={listRelationships(members)}
             photoUrl={self?.photoUrl ?? null}
             hasPhoto={Boolean(self?.photoPath)}
