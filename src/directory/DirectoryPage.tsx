@@ -5,7 +5,7 @@ import { filterMembers, listRelationships, parseDirectoryView } from "./filters"
 import { focusMemberId, relationshipSummary } from "../lib/kinship";
 import { MemberCard } from "./MemberCard";
 import { MemberTable } from "./MemberTable";
-import { withSearch, withoutEdit } from "./paths";
+import { memberPath, newMemberPath, withSearch, withoutEdit } from "./paths";
 import { inputClass, labelClass, pageClass, primaryButtonClass, secondaryButtonClass, surfaceClass } from "./styles";
 import { useFamily } from "../store/FamilyProvider";
 
@@ -78,7 +78,7 @@ export function DirectoryPage() {
             <FileSpreadsheet size={16} aria-hidden />
             Import
           </Link>
-          <Link to={withSearch("/members/new", listSearch)} className={primaryButtonClass}>
+          <Link to={withSearch(newMemberPath, listSearch)} className={primaryButtonClass}>
             <Plus size={16} aria-hidden />
             Add member
           </Link>
@@ -91,7 +91,7 @@ export function DirectoryPage() {
             <h2 className="font-display text-2xl font-bold tracking-tight">Your details</h2>
             <p className="mt-1 max-w-xl text-sm text-stone-500">Add your birthdate, address, and relationships. Birthdays and the family tree then include you.</p>
           </div>
-          <Link to="/me" className={primaryButtonClass}>
+          <Link to="/me?edit=1" className={primaryButtonClass}>
             Add your details
           </Link>
         </div>
@@ -182,13 +182,13 @@ export function DirectoryPage() {
         </div>
       ) : view === "table" ? (
         <div className="mt-6">
-          <MemberTable members={results} hrefFor={(id) => withSearch(`/members/${encodeURIComponent(id)}`, listSearch)} labelFor={(id) => labels.get(id) ?? ""} />
+          <MemberTable members={results} hrefFor={(id) => withSearch(memberPath(id), listSearch)} labelFor={(id) => labels.get(id) ?? ""} />
         </div>
       ) : (
         <ul className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {results.map((member) => (
             <li key={member.id}>
-              <MemberCard member={member} to={withSearch(`/members/${encodeURIComponent(member.id)}`, listSearch)} relationshipLabel={labels.get(member.id)} />
+              <MemberCard member={member} to={withSearch(memberPath(member.id), listSearch)} relationshipLabel={labels.get(member.id)} />
             </li>
           ))}
         </ul>

@@ -8,7 +8,7 @@ export function NotFound() {
       <h1 className="mt-3 font-display text-4xl font-bold tracking-tight">That page is not in the book</h1>
       <p className="mt-3 text-stone-500">The link does not match a page in this household.</p>
       <Link to="/" className={`${primaryButtonClass} mt-6`}>
-        Back to the directory
+        Back home
       </Link>
     </main>
   );

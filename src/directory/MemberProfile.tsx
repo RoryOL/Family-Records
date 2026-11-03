@@ -6,6 +6,7 @@ import { describedGodchildren, describedGodparents, type NamedPerson } from "../
 import { formatLongDate } from "../lib/dates";
 import type { KinshipLine } from "../lib/kinship";
 import { MemberAvatar } from "./MemberAvatar";
+import { memberPath } from "./paths";
 import { isDeceased } from "../lib/members";
 import { addressBadge, ageAtDeathLabel, badgeClass, nextBirthdayLabel } from "./memberDisplay";
 import { labelClass } from "./styles";
@@ -53,7 +54,7 @@ export function MemberProfile({
             <ul className="grid gap-1">
               {lines.map((line) => (
                 <li key={`${line.otherId}-${line.term}`}>
-                  <Link className="underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(line.otherId)}`}>
+                  <Link className="underline decoration-amber-300 underline-offset-2" to={memberPath(line.otherId)}>
                     {line.phrase}
                   </Link>
                 </li>
@@ -70,7 +71,7 @@ export function MemberProfile({
               {weddings.map((wedding) => (
                 <li key={wedding.otherId}>
                   Married to{" "}
-                  <Link className="underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(wedding.otherId)}`}>
+                  <Link className="underline decoration-amber-300 underline-offset-2" to={memberPath(wedding.otherId)}>
                     {wedding.otherName}
                   </Link>{" "}
                   on {formatLongDate(wedding.date)}
@@ -154,7 +155,7 @@ function PersonList({ title, people, empty }: { title: string; people: readonly 
             {people.map((person) => (
               <li key={`${person.memberId ?? "name"}-${person.name}`}>
                 {person.memberId ? (
-                  <Link className="underline decoration-amber-300 underline-offset-2" to={`/members/${encodeURIComponent(person.memberId)}`}>
+                  <Link className="underline decoration-amber-300 underline-offset-2" to={memberPath(person.memberId)}>
                     {person.name}
                   </Link>
                 ) : (

@@ -1,6 +1,7 @@
 import { FileSpreadsheet, Upload } from "lucide-react";
 import { useEffect, useMemo, useState, type DragEvent, type FormEvent } from "react";
 import { Link } from "react-router";
+import { directoryPath } from "../directory/paths";
 import { inputClass, labelClass, pageClass, primaryButtonClass, secondaryButtonClass, surfaceClass } from "../directory/styles";
 import { useFamily } from "../store/FamilyProvider";
 import { IMPORT_TARGETS, previewImport, suggestMappings, type ImportRowPlan } from "./prepare";
@@ -239,7 +240,7 @@ export function ImportPage() {
               {added > 0 ? (
                 <p className="text-sm text-stone-500" role="status">
                   Added {added} {added === 1 ? "person" : "people"}.{" "}
-                  <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to="/">
+                  <Link className="font-semibold text-stone-850 underline decoration-amber-300 underline-offset-2" to={directoryPath}>
                     Back to the directory
                   </Link>
                 </p>
