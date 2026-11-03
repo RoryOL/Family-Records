@@ -15,11 +15,11 @@ export type FamilyRole = "owner" | "editor";
 /** Used to choose niece or nephew, brother or sister, and the other paired terms. */
 export type Gender = "female" | "male";
 
-/** Stored link. Parent points from parent to child. Partner, marriage, and sibling links are stored once. */
-export type RelationKind = "parent" | "spouse" | "married" | "sibling";
+/** Stored link. Parent and step point from the elder to the child. Partner, marriage, and sibling links are stored once. */
+export type RelationKind = "parent" | "step" | "spouse" | "married" | "sibling";
 
 /** How the person being edited is related to someone already in the household. */
-export type LinkRole = "parent" | "child" | "sibling" | "spouse" | "married";
+export type LinkRole = "parent" | "child" | "stepparent" | "stepchild" | "sibling" | "spouse" | "married";
 
 /** Irish layout is the household default. International keeps street, region, and country. */
 export type AddressFormat = "ie" | "international";

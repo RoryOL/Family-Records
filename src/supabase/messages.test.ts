@@ -26,10 +26,13 @@ describe("friendlySupabaseMessage", () => {
     );
     expect(friendlySupabaseMessage("Bucket not found")).toBe("Run the member photos migration in the Supabase SQL editor, then try again.");
     expect(friendlySupabaseMessage("Could not find the 'wedding_date' column of 'member_relations' in the schema cache")).toBe(
-      "Run the weddings, godparents, and marriage migrations in the Supabase SQL editor, then try again.",
+      "Run the weddings, godparents, marriage, and step-parent migrations in the Supabase SQL editor, then try again.",
     );
     expect(friendlySupabaseMessage("Could not find the table 'public.godparents' in the schema cache")).toBe(
-      "Run the weddings, godparents, and marriage migrations in the Supabase SQL editor, then try again.",
+      "Run the weddings, godparents, marriage, and step-parent migrations in the Supabase SQL editor, then try again.",
+    );
+    expect(friendlySupabaseMessage('new row for relation "member_relations" violates check constraint "member_relations_kind"')).toBe(
+      "Run the weddings, godparents, marriage, and step-parent migrations in the Supabase SQL editor, then try again.",
     );
     expect(friendlySupabaseMessage("Could not find the table 'public.member_relations' in the schema cache")).toBe(
       "Run the family tree migration in the Supabase SQL editor, then try again.",

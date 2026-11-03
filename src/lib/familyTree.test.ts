@@ -7,7 +7,8 @@ function person(id: string, dateOfBirth: string | null): TreePerson {
 }
 
 function link(from: string, to: string, kind: MemberRelation["kind"]): MemberRelation {
-  const [fromMemberId, toMemberId] = kind === "parent" || from < to ? [from, to] : [to, from];
+  const directed = kind === "parent" || kind === "step";
+  const [fromMemberId, toMemberId] = directed || from < to ? [from, to] : [to, from];
   return { id: `${kind}-${fromMemberId}-${toMemberId}`, familyGroupId: "grp", fromMemberId, toMemberId, kind, weddingDate: null };
 }
 
