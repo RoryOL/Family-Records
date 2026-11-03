@@ -6,8 +6,9 @@ import { MemberForm } from "./MemberForm";
 import { emptyFormValues, memberToFormValues } from "./memberForm";
 import { MemberProfile } from "./MemberProfile";
 import { directoryPath, memberPath, withSearch, withoutEdit } from "./paths";
+import { familySurname, surnameChoices } from "./surnames";
 import { primaryButtonClass, secondaryButtonClass } from "./styles";
-import { kinshipLines, linksTouching } from "../lib/kinship";
+import { focusMemberId, kinshipLines, linksTouching } from "../lib/kinship";
 import type { MemberPhotoSelection } from "../lib/memberPhoto";
 import type { MemberLinkInput } from "../types";
 import { useFamily } from "../store/FamilyProvider";
@@ -18,7 +19,13 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
   const { memberId } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { members, relations, godparents, people, getMember, addMember, updateMember, removeMember } = useFamily();
+  const { members, relations, godparents, people, currentUser, getMember, addMember, updateMember, removeMember } = useFamily();
+  const focusId = focusMemberId(members, currentUser.id);
+  const familyName = familySurname(members, currentUser);
+  const surnames = surnameChoices(
+    members.map((item) => item.lastName),
+    familyName,
+  );
   const member = intent === "existing" && memberId ? getMember(memberId) : undefined;
   const missing = intent === "existing" && !member;
   const editing = !missing && (intent === "create" || searchParams.get("edit") === "1");
@@ -150,6 +157,9 @@ export function MemberDrawer({ intent }: { intent: "create" | "existing" }) {
               people={members
                 .filter((item) => item.id !== member?.id)
                 .map((item) => ({ id: item.id, fullName: item.fullName, dateOfBirth: item.dateOfBirth }))}
+              focusId={focusId}
+              familyName={familyName}
+              surnames={surnames}
               suggestions={listRelationships(members)}
               photoUrl={member?.photoUrl ?? null}
               hasPhoto={Boolean(member?.photoPath)}

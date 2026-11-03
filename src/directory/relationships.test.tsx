@@ -2,6 +2,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { FamilyLinksField } from "./FamilyLinksField";
 import { GodparentsField } from "./GodparentsField";
+import { MemberForm } from "./MemberForm";
+import { emptyFormValues } from "./memberForm";
 
 describe("relationship fields", () => {
   const people = [
@@ -29,6 +31,61 @@ describe("relationship fields", () => {
     expect(html).toContain("Marriage date");
     expect(html).toContain('value="2014-09-23"');
     expect(html.match(/type="date"/g)).toHaveLength(1);
+  });
+
+  it("lists the signed-in person first in the relationship dropdown", () => {
+    const html = renderToStaticMarkup(
+      <FamilyLinksField
+        links={[{ otherId: "", role: "child" }]}
+        people={[
+          { id: "zara", fullName: "Zara Adams" },
+          { id: "me", fullName: "Mina Byrne" },
+          { id: "aaron", fullName: "Aaron Byrne" },
+        ]}
+        focusId="me"
+        onChange={() => undefined}
+      />,
+    );
+    const related = html.match(/aria-label="Related person 1"[\s\S]*?<\/select>/)?.[0] ?? "";
+    const names = [...related.matchAll(/<option[^>]*>([^<]*)<\/option>/g)].map((match) => match[1]);
+    expect(names).toEqual(["Choose a person", "Mina Byrne (you)", "Aaron Byrne", "Zara Adams"]);
+  });
+
+  it("offers the family surname first when adding someone, and hides those choices while editing", () => {
+    const adding = renderToStaticMarkup(
+      <MemberForm
+        initial={{ ...emptyFormValues(), links: [{ otherId: "", role: "child" }] }}
+        suggestions={[]}
+        familyName="Harper"
+        surnames={["Harper", "Ellison"]}
+        people={[
+          { id: "me", fullName: "Elena Harper" },
+          { id: "ruth", fullName: "Ruth Ellison" },
+        ]}
+        focusId="me"
+        onSave={() => undefined}
+        onDirtyChange={() => undefined}
+      />,
+    );
+    expect(adding).toContain("Choose a surname");
+    expect(adding).toContain("Harper");
+    expect(adding).toContain("· yours");
+    expect(adding.indexOf("Harper")).toBeLessThan(adding.indexOf("Ellison"));
+    expect(adding).toContain("Elena Harper (you)");
+
+    const editing = renderToStaticMarkup(
+      <MemberForm
+        initial={{ ...emptyFormValues(), firstName: "Jonah", lastName: "Harper" }}
+        selfId="jonah"
+        suggestions={[]}
+        familyName="Harper"
+        surnames={["Harper", "Ellison"]}
+        onSave={() => undefined}
+        onDirtyChange={() => undefined}
+      />,
+    );
+    expect(editing).not.toContain("Choose a surname");
+    expect(editing).not.toContain("· yours");
   });
 
   it("leaves a younger person out of the godparent list", () => {

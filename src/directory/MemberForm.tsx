@@ -28,6 +28,9 @@ export function MemberForm({
   hasPhoto = false,
   people = [],
   selfId,
+  focusId = null,
+  familyName = "",
+  surnames = [],
   onSave,
   onDirtyChange,
 }: {
@@ -38,6 +41,12 @@ export function MemberForm({
   hasPhoto?: boolean;
   people?: readonly { id: string; fullName: string; dateOfBirth?: string | null }[];
   selfId?: string;
+  /** Signed-in member, listed first when this person is related to them. */
+  focusId?: string | null;
+  /** Signed-in surname. Marked on the surname choices for a new person. */
+  familyName?: string;
+  /** Household surnames, family name first. Shown while adding someone new. */
+  surnames?: readonly string[];
   onSave: (draft: MemberDraft, photo: MemberPhotoSelection, links: MemberLinkInput[], godparents: MemberFormValues["godparents"]) => void;
   onDirtyChange: (dirty: boolean) => void;
 }) {
@@ -167,13 +176,40 @@ export function MemberForm({
           inputRef={firstNameRef}
           onChange={(value) => update("firstName", value)}
         />
-        <TextField
-          id={`${baseId}-last`}
-          label="Last name"
-          autoComplete="family-name"
-          value={values.lastName}
-          onChange={(value) => update("lastName", value)}
-        />
+        <div>
+          <TextField
+            id={`${baseId}-last`}
+            label="Last name"
+            autoComplete="family-name"
+            value={values.lastName}
+            onChange={(value) => update("lastName", value)}
+          />
+          {!selfId && surnames.length > 0 ? (
+            <div className="mt-2" role="group" aria-label="Surnames">
+              <p className="text-xs text-stone-500">Choose a surname</p>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {surnames.map((name) => {
+                  const selected = values.lastName.trim().toLocaleLowerCase() === name.toLocaleLowerCase();
+                  const yours = familyName.trim().toLocaleLowerCase() === name.toLocaleLowerCase();
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      aria-pressed={selected}
+                      className={`rounded-full px-3 py-1 text-sm font-semibold transition-all duration-200 ease-out ${
+                        selected ? "bg-terracotta text-white shadow-warm" : "border border-stone-200/60 bg-white text-stone-850 shadow-warm hover:bg-amber-50"
+                      }`}
+                      onClick={() => update("lastName", name)}
+                    >
+                      {name}
+                      {yours ? <span className="font-normal"> · yours</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
       <div>
         <label htmlFor={`${baseId}-gender`} className={labelClass}>
@@ -194,6 +230,7 @@ export function MemberForm({
       <FamilyLinksField
         links={values.links}
         people={people}
+        focusId={focusId}
         error={errors.links}
         onChange={(links) => update("links", links)}
       />
