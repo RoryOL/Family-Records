@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isYoungerThan, parseIsoDate, toIsoDate } from "./dates";
+import { displayDate, isYoungerThan, parseFlexibleDate, parseIsoDate, toIsoDate } from "./dates";
 
 describe("parseIsoDate", () => {
   it("accepts a real calendar date", () => {
@@ -22,6 +22,27 @@ describe("isYoungerThan", () => {
     expect(isYoungerThan(null, "2000-01-01")).toBe(false);
     expect(isYoungerThan("2015-01-01", "")).toBe(false);
     expect(isYoungerThan("2015-02-31", "2000-01-01")).toBe(false);
+  });
+});
+
+describe("parseFlexibleDate", () => {
+  it("reads a typed day month year date and keeps an ISO date", () => {
+    expect(parseFlexibleDate("18/12/1956")).toBe("1956-12-18");
+    expect(parseFlexibleDate("8/1/1956")).toBe("1956-01-08");
+    expect(parseFlexibleDate("18.12.1956")).toBe("1956-12-18");
+    expect(parseFlexibleDate("18-12-1956")).toBe("1956-12-18");
+    expect(parseFlexibleDate(" 18 / 12 / 1956 ")).toBe("1956-12-18");
+    expect(parseFlexibleDate("1956-12-18")).toBe("1956-12-18");
+    expect(displayDate("1956-12-18")).toBe("18/12/1956");
+    expect(displayDate("18/12/1956")).toBe("18/12/1956");
+  });
+
+  it("rejects an impossible or unfinished date", () => {
+    expect(parseFlexibleDate("29/02/2015")).toBeNull();
+    expect(parseFlexibleDate("31/02/2019")).toBeNull();
+    expect(parseFlexibleDate("18/12/56")).toBeNull();
+    expect(parseFlexibleDate("18/12")).toBeNull();
+    expect(displayDate("18/12")).toBe("18/12");
   });
 });
 

@@ -176,6 +176,8 @@ describe("member links", () => {
       { otherId: "alex", role: "spouse", weddingDate: "2001-01-01" },
     ]);
     expect(stored.find((relation) => relation.kind === "married")).toMatchObject({ kind: "married", weddingDate: "2014-09-23" });
+    const typed = applyMemberLinks([], "grp", "elena", [{ otherId: "marcus", role: "married", weddingDate: "23/09/2014" }]);
+    expect(typed.find((relation) => relation.kind === "married")?.weddingDate).toBe("2014-09-23");
     expect(stored.find((relation) => relation.kind === "spouse")).toMatchObject({ kind: "spouse", weddingDate: null });
     expect(linksTouching("marcus", stored)).toEqual([{ otherId: "elena", role: "married", weddingDate: "2014-09-23" }]);
     expect(linksTouching("alex", stored)).toEqual([{ otherId: "elena", role: "spouse" }]);

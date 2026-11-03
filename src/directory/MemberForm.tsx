@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState, type FormEvent, type Ref } from "re
 import { yearsLived } from "../lib/members";
 import { photoProblem, type MemberPhotoSelection } from "../lib/memberPhoto";
 import { SUGGESTED_RELATIONSHIPS } from "../types";
+import { DateField } from "./DateField";
 import { FamilyLinksField } from "./FamilyLinksField";
 import { GodparentsField } from "./GodparentsField";
 import { MemberAvatar } from "./MemberAvatar";
@@ -255,10 +256,9 @@ export function MemberForm({
         ))}
       </datalist>
       <div>
-        <TextField
+        <DateField
           id={`${baseId}-dob`}
           label="Date of birth"
-          type="date"
           autoComplete="bday"
           value={values.dateOfBirth}
           error={errors.dateOfBirth}
@@ -287,10 +287,9 @@ export function MemberForm({
         </p>
         {values.deceased ? (
           <div className="mt-4">
-            <TextField
+            <DateField
               id={`${baseId}-dod`}
               label="Date of death"
-              type="date"
               value={values.dateOfDeath}
               error={errors.dateOfDeath}
               inputRef={deathRef}
