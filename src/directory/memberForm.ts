@@ -1,4 +1,4 @@
-import { parseIsoDate } from "../lib/dates";
+import { parseFlexibleDate, parseIsoDate } from "../lib/dates";
 import { emptyGodparentSlots, godparentProblem, slotsFromGodparents, type GodparentSlot } from "../lib/godparents";
 import { linkProblem } from "../lib/kinship";
 import { fullNameFrom } from "../lib/members";
@@ -98,12 +98,14 @@ export function validateMemberForm(
   if (!values.firstName.trim()) errors.firstName = "Enter a first name.";
 
   const dateOfBirth = values.dateOfBirth.trim();
-  if (dateOfBirth && !parseIsoDate(dateOfBirth)) errors.dateOfBirth = "Enter a real date.";
+  const birth = dateOfBirth ? parseFlexibleDate(dateOfBirth) : null;
+  if (dateOfBirth && !birth) errors.dateOfBirth = "Enter a date like 21/09/1988.";
 
   if (values.deceased) {
     const dateOfDeath = values.dateOfDeath.trim();
-    if (dateOfDeath && !parseIsoDate(dateOfDeath)) errors.dateOfDeath = "Enter a real date.";
-    else if (dateOfDeath && dateOfBirth && parseIsoDate(dateOfBirth) && dateOfDeath < dateOfBirth) {
+    const death = dateOfDeath ? parseFlexibleDate(dateOfDeath) : null;
+    if (dateOfDeath && !death) errors.dateOfDeath = "Enter a date like 21/09/1988.";
+    else if (death && birth && death < birth) {
       errors.dateOfDeath = "Date of death is before the date of birth.";
     }
   }
@@ -127,7 +129,7 @@ export function hasFormErrors(errors: MemberFormErrors): boolean {
 }
 
 export function dateWarning(iso: string, today = new Date()): string | null {
-  const parsed = parseIsoDate(iso.trim());
+  const parsed = parseIsoDate(parseFlexibleDate(iso) ?? "");
   if (!parsed) return null;
   const date = new Date(parsed.year, parsed.month - 1, parsed.day);
   const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -145,9 +147,9 @@ export function formValuesToDraft(values: MemberFormValues, addressId?: string):
     fullName: fullNameFrom(firstName, lastName),
     relationship: values.relationship,
     gender: values.gender || null,
-    dateOfBirth: values.dateOfBirth.trim() || null,
+    dateOfBirth: parseFlexibleDate(values.dateOfBirth),
     deceased: values.deceased,
-    dateOfDeath: values.deceased ? values.dateOfDeath.trim() || null : null,
+    dateOfDeath: values.deceased ? parseFlexibleDate(values.dateOfDeath) : null,
     phone: values.phone.trim() || null,
     email: values.email.trim() || null,
     notes: values.notes,

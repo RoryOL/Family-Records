@@ -26,7 +26,9 @@ describe("deceased member views", () => {
       />,
     );
     expect(remembered).toContain("Date of death");
-    expect(remembered).toContain("2019-03-02");
+    expect(remembered).toContain('value="18/12/1956"');
+    expect(remembered).toContain('value="02/03/2019"');
+    expect(remembered).toContain('placeholder="dd/mm/yyyy"');
     expect(remembered).toContain("Died at 62");
     expect(remembered).not.toContain("Turns");
   });

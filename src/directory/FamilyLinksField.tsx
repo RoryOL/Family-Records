@@ -1,4 +1,5 @@
 import type { LinkRole, MemberLinkInput } from "../types";
+import { DateField } from "./DateField";
 import { inputClass, labelClass } from "./styles";
 
 const roles: { value: LinkRole; label: string }[] = [
@@ -91,16 +92,14 @@ export function FamilyLinksField({
               Remove
             </button>
             {link.role === "married" ? (
-              <label className="grid basis-full gap-1 text-sm sm:max-w-xs">
-                Marriage date
-                <input
-                  aria-label={`Marriage date ${index + 1}`}
-                  type="date"
-                  className={`${inputClass} mt-0`}
+              <div className="grid basis-full gap-1 text-sm sm:max-w-xs">
+                <span>Marriage date</span>
+                <DateField
+                  ariaLabel={`Marriage date ${index + 1}`}
                   value={link.weddingDate ?? ""}
-                  onChange={(event) => update(index, { weddingDate: event.target.value })}
+                  onChange={(weddingDate) => update(index, { weddingDate })}
                 />
-              </label>
+              </div>
             ) : null}
           </div>
         ))

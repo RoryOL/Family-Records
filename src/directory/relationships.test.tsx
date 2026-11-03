@@ -29,7 +29,9 @@ describe("relationship fields", () => {
     expect(html).toContain("married to");
     expect(html).toContain("the partner or spouse of a parent is a mother or father");
     expect(html).toContain("Marriage date");
-    expect(html).toContain('value="2014-09-23"');
+    expect(html).toContain('value="23/09/2014"');
+    expect(html).toContain('placeholder="dd/mm/yyyy"');
+    expect(html).toContain('aria-label="Open calendar for Marriage date 2"');
     expect(html.match(/type="date"/g)).toHaveLength(1);
   });
 

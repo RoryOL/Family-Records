@@ -53,7 +53,7 @@ describe("member form", () => {
     });
     expect(errors).toEqual({
       firstName: "Enter a first name.",
-      dateOfBirth: "Enter a real date.",
+      dateOfBirth: "Enter a date like 21/09/1988.",
       email: "Enter an email like name@example.com.",
     });
   });
@@ -103,7 +103,7 @@ describe("member form", () => {
         deceased: true,
         dateOfDeath: "2019-02-31",
       }).dateOfDeath,
-    ).toBe("Enter a real date.");
+    ).toBe("Enter a date like 21/09/1988.");
   });
 
   it("round-trips a recorded death onto the form", () => {
@@ -113,6 +113,21 @@ describe("member form", () => {
     expect(values.deceased).toBe(true);
     expect(values.dateOfDeath).toBe("2020-01-02");
     expect(formValuesToDraft(values).dateOfDeath).toBe("2020-01-02");
+  });
+
+  it("stores a typed day month year date as an ISO date", () => {
+    const values = {
+      ...emptyFormValues(),
+      firstName: "Arthur",
+      dateOfBirth: "18/12/1956",
+      deceased: true,
+      dateOfDeath: "02/03/2019",
+    };
+    expect(validateMemberForm(values)).toEqual({});
+    expect(formValuesToDraft(values)).toMatchObject({ dateOfBirth: "1956-12-18", dateOfDeath: "2019-03-02" });
+    expect(validateMemberForm({ ...emptyFormValues(), firstName: "Arthur", dateOfBirth: "31/02/2019" }).dateOfBirth).toBe(
+      "Enter a date like 21/09/1988.",
+    );
   });
 
   it("warns when the birthday is after today without blocking the date", () => {

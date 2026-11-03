@@ -21,6 +21,30 @@ export function isYoungerThan(birthDate: string | null | undefined, than: string
   return birth > other;
 }
 
+const DAY_MONTH_YEAR = /^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/;
+
+/** ISO `YYYY-MM-DD`, or null when the text is not a real calendar date. Accepts `dd/mm/yyyy` as well. */
+export function parseFlexibleDate(value: string): string | null {
+  const compact = value.trim().replace(/\s+/g, "");
+  if (!compact) return null;
+  if (parseIsoDate(compact)) return compact;
+  const match = DAY_MONTH_YEAR.exec(compact);
+  if (!match) return null;
+  const iso = `${match[3]}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`;
+  return parseIsoDate(iso) ? iso : null;
+}
+
+/** `dd/mm/yyyy` for a stored ISO date. Other text is left as typed. */
+export function displayDate(value: string): string {
+  const iso = parseFlexibleDate(value);
+  if (!iso) return value;
+  const parsed = parseIsoDate(iso);
+  if (!parsed) return value;
+  const day = String(parsed.day).padStart(2, "0");
+  const month = String(parsed.month).padStart(2, "0");
+  return `${day}/${month}/${parsed.year}`;
+}
+
 export function parseIsoDate(value: string): CalendarDate | null {
   const match = ISO_DATE.exec(value);
   if (!match) return null;

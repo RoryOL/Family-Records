@@ -1,4 +1,4 @@
-import { parseIsoDate } from "./dates";
+import { parseFlexibleDate } from "./dates";
 import type { Gender, MemberLinkInput, MemberRelation, RelationKind } from "../types";
 
 export interface KinshipPerson {
@@ -30,7 +30,7 @@ export function linkProblem(links: readonly MemberLinkInput[]): string | null {
     const key = `${link.role}:${link.otherId}`;
     if (seen.has(key)) return "That relationship is already listed.";
     seen.add(key);
-    if (link.role === "married" && link.weddingDate?.trim() && !parseIsoDate(link.weddingDate.trim())) {
+    if (link.role === "married" && link.weddingDate?.trim() && !parseFlexibleDate(link.weddingDate)) {
       return "Enter a real marriage date.";
     }
   }
@@ -120,7 +120,7 @@ export function makeRelation(
   if (fromMemberId === toMemberId) return null;
   const directed = kind === "parent" || kind === "step";
   const [from, to] = directed || fromMemberId < toMemberId ? [fromMemberId, toMemberId] : [toMemberId, fromMemberId];
-  const date = kind === "married" && weddingDate && parseIsoDate(weddingDate.trim()) ? weddingDate.trim() : null;
+  const date = kind === "married" && weddingDate ? parseFlexibleDate(weddingDate) : null;
   return {
     id: globalThis.crypto?.randomUUID?.() ?? `rel_${from}_${to}_${kind}`,
     familyGroupId,
