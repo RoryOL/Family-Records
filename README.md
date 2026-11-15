@@ -28,11 +28,24 @@ Under Authentication → URL configuration, set the site URL to this app so conf
 
 `npm test` checks the store, directory filters, the member form, pictures, relationships, weddings, godparents, step-parents, deceased members, the family tree, birthday windows, calendar export, mailing labels, spreadsheet import, the Supabase row mapping, the home tab, the You page, the home-screen hint, and the APK update check. `npm run build` typechecks and builds the Vite app. `npm run preview` serves that build, including the service worker.
 
+## Web
+
+GitHub Pages serves the production build from Actions on `main`. The site URL is `https://roryol.github.io/Family-Records/`.
+
+One-time setup:
+
+1. Under Settings → Pages, set **Source** to **GitHub Actions**.
+2. Keep the same Actions secrets already used for the Android APK: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+3. Under Supabase → Authentication → URL configuration, set the site URL to `https://roryol.github.io/Family-Records/` and add that address to the redirect allow list.
+4. GitHub Pages needs a public repository on the free plan, or a paid plan that allows Pages for private repositories.
+
+After the first successful **GitHub Pages** workflow on `main`, open the URL above in a browser. Deep links use a copied `404.html` so a refresh still loads the app.
+
 ## Install
 
 The production build is an installable app. On Chrome or Edge, open Family Records and choose **Install app**. On iPhone or iPad, open the Share menu and choose **Add to Home Screen**.
 
-`http://localhost:5173` can be installed on the computer running the dev server. A phone adds the browser app from a public HTTPS address. The service worker is registered in the production build, so install from `npm run build` and `npm run preview`, or from the deployed site.
+`http://localhost:5173` can be installed on the computer running the dev server. A phone adds the browser app from the GitHub Pages address. The service worker is registered in the production build, so install from `npm run build` and `npm run preview`, or from the deployed site.
 
 ## Android
 

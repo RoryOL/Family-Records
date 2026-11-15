@@ -12,12 +12,14 @@ import { AppShell } from "./shell/AppShell";
 import { FamilyTreePage } from "./tree/FamilyTreePage";
 import { FamilyProvider } from "./store/FamilyProvider";
 
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "");
+
 export default function App() {
   return (
     <>
       <AppUpdateNotice />
       <FamilyProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={routerBasename || undefined}>
           <AppRoutes />
         </BrowserRouter>
       </FamilyProvider>

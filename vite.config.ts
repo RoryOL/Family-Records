@@ -3,7 +3,14 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vitest/config";
 
+function pagesBase() {
+  const raw = process.env.BASE_PATH?.trim();
+  if (!raw || raw === "/") return "/";
+  return raw.endsWith("/") ? raw : `${raw}/`;
+}
+
 export default defineConfig({
+  base: pagesBase(),
   plugins: [
     react(),
     tailwindcss(),
@@ -15,8 +22,8 @@ export default defineConfig({
         name: "Family Records",
         short_name: "Family Records",
         description: "A family directory for people, birthdays, and mailing addresses.",
-        start_url: "/",
-        scope: "/",
+        start_url: "./",
+        scope: "./",
         display: "standalone",
         background_color: "#fafaf9",
         theme_color: "#F97316",
